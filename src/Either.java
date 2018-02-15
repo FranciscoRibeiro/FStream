@@ -1,2 +1,4 @@
-public class Either<L,R> {
+public abstract class Either<L,R> {
+    L left;
+    R right;
 }

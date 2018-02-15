@@ -1,11 +1,10 @@
 public class Right<T> extends Either{
-  T elem;
 
   public Right(T e){
-    this.elem = e;
+    this.right = e;
   }
 
   public T fromRight(){
-    return this.elem;
+    return (T) this.right;
   }
 }

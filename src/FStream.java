@@ -87,8 +87,7 @@ public class FStream<T>{
     public FStream<T> appendfs(FStream<T> streamB){
       Function<Object, Step> stepper = x -> {
           if(x instanceof Left){
-              ArrayList leftState = (ArrayList) ((Left) x).fromLeft();
-              Step aux = this.stepper.apply(leftState);
+              Step aux = this.stepper.apply(((Left) x).fromLeft());
 
               if(aux instanceof Done){
                   return new Skip<Either>(new Right(streamB.state));
@@ -101,8 +100,7 @@ public class FStream<T>{
               }
           }
           else if(x instanceof Right){
-              ArrayList rightState = (ArrayList) ((Right) x).fromRight();
-              Step aux = streamB.stepper.apply(rightState);
+              Step aux = streamB.stepper.apply(((Right) x).fromRight());
 
               if(aux instanceof Done){
                   return new Done();
@@ -172,7 +170,7 @@ public class FStream<T>{
         }
         FStream<Integer> fsOrigB = fstream(lB);
         Predicate<Integer> p2 = n -> n >= 4;
-        ArrayList<Integer> lAppended = fsOrig.appendfs(fsOrigB).mapfs(inc).filterfs(p2).unfstream();
+        ArrayList<Integer> lAppended = fsOrig.appendfs(fsOrigB).appendfs(fsOrigB).mapfs(inc).filterfs(p2).unfstream();
         System.out.println(lAppended);
     }
 }

@@ -1,13 +1,10 @@
-import java.util.ArrayList;
-
 public class Left<T> extends Either{
-  T elem;
 
   public Left(T e){
-    this.elem = e;
+    this.left = e;
   }
 
   public T fromLeft(){
-    return this.elem;
+    return (T) this.left;
   }
 }
