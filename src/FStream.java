@@ -28,15 +28,12 @@ public class FStream<T>{
     public ArrayList<T> unfstream(){
         ArrayList<T> res = new ArrayList<>();
         Step step = this.stepper.apply(this.state);
-        ArrayList auxState = (ArrayList) this.state;
-        int slicer = 1;
 
         while(!(step instanceof Done)){
             if(step instanceof Yield){
-                res.add((T)((Yield) step).elem);
+                res.add((T) step.elem);
             }
-            step = this.stepper.apply(new ArrayList<T>(auxState.subList(slicer, auxState.size())));
-            slicer++;
+            step = this.stepper.apply(step.state);
         }
 
         return res;
@@ -121,7 +118,7 @@ public class FStream<T>{
           return null;
       };
 
-      return new FStream<T>(stepper, this.state);
+      return new FStream<T>(stepper, new Left(this.state));
     }
 
     public static <T> ArrayList<T> map(Function f, ArrayList<T> l){
@@ -168,6 +165,13 @@ public class FStream<T>{
         ArrayList<Integer> lInc2 = fsInc2.unfstream();
         System.out.println(lInc2);
 
-        System.out.println(map(inc,l));
+        System.out.println("Appending...");
+        ArrayList<Integer> lB = new ArrayList<>();
+        for(int i = 6; i < SIZE+6; i++){
+            lB.add(i);
+        }
+        FStream<Integer> fsOrigB = fstream(lB);
+        ArrayList<Integer> lAppended = fsOrig.appendfs(fsOrigB).unfstream();
+        System.out.println(lAppended);
     }
 }
