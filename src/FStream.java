@@ -119,6 +119,41 @@ public class FStream<T>{
       return new FStream<T>(stepper, new Left(this.state));
     }
 
+    public <S> FStream<Pair<T,S>> zipfs(FStream<S> streamB){
+        Function<Object, Step> stepper = x -> {
+            if(!(((Triple) x).getElem()).isPresent()){
+                Step aux = this.stepper.apply(((Triple) x).getStateA());
+
+                if(aux instanceof Done){
+                    return new Done();
+                }
+                else if(aux instanceof Skip){
+                    return new Skip<>(new Triple(aux.state, ((Triple) x).getStateB(), Optional.empty()));
+                }
+                else if(aux instanceof Yield){
+                    return new Skip<>(new Triple(aux.state, ((Triple) x).getStateB(), Optional.of(aux.elem)));
+                }
+            }
+            else{ //There is a value present in Optional
+                Step aux = streamB.stepper.apply(((Triple) x).getStateB());
+
+                if(aux instanceof Done){
+                    return new Done();
+                }
+                else if(aux instanceof Skip){
+                    return new Skip<>(new Triple(((Triple) x).getStateA(), aux.state, ((Triple) x).getElem()));
+                }
+                else if(aux instanceof Yield){
+                    return new Yield<>(new Pair<>(((Triple) x).getElem().get(), aux.elem), new Triple(((Triple) x).getStateA(), aux.state, Optional.empty()));
+                }
+            }
+
+            return null;
+        };
+
+        return new FStream<>(stepper, new Triple<>(this.state, streamB.state, Optional.empty()));
+    }
+
     public static <T> ArrayList<T> map(Function f, ArrayList<T> l){
         return fstream(l).mapfs(f).unfstream();
     }
@@ -172,5 +207,11 @@ public class FStream<T>{
         Predicate<Integer> p2 = n -> n >= 4;
         ArrayList<Integer> lAppended = fsOrig.appendfs(fsOrigB).appendfs(fsOrigB).mapfs(inc).filterfs(p2).unfstream();
         System.out.println(lAppended);
+
+        System.out.println("Zipping...");
+        ArrayList<String> lStrings = new ArrayList<>(Arrays.asList(new String[]{"hello", "ola", "hola", "ciao", "hallo"}));
+        FStream<String> fsString = fstream(lStrings);
+        ArrayList<Pair<Integer,String>> lZipped = fsOrig.mapfs(inc).filterfs(p2).zipfs(fsString).unfstream();
+        System.out.println(lZipped);
     }
 }
