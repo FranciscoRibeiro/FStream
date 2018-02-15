@@ -1,4 +1,6 @@
 import java.util.*;
 
-public class Step<T,S>{
+public abstract class Step<T,S>{
+    T elem;
+    S state;
 }
