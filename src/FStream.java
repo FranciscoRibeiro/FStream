@@ -47,13 +47,13 @@ public class FStream<T>{
                 return new Done();
             }
             else if(aux instanceof Skip){
-                return new Skip<ArrayList>((ArrayList)((Skip)aux).state); //Need to change this later
+                return new Skip<>(aux.state); //Need to change this later
             }
             else if(aux instanceof Yield){
-                return new Yield<S,ArrayList>(funcTtoS.apply((T)((Yield)aux).elem), (ArrayList)((Yield)aux).state);
+                return new Yield<>(funcTtoS.apply((T) aux.elem), aux.state);
             }
 
-          return null;
+            return null;
         };
 
         return new FStream<S>(stepper, this.state);
@@ -67,14 +67,14 @@ public class FStream<T>{
                 return new Done();
             }
             else if(aux instanceof Skip){
-                return new Skip<ArrayList>((ArrayList)((Skip)aux).state); //Need to change this later
+                return new Skip<>(aux.state); //Need to change this later
             }
             else if(aux instanceof Yield){
-                if(p.test(((Yield)aux).elem)){
-                    return new Yield<T,ArrayList>((T)((Yield)aux).elem, (ArrayList)((Yield)aux).state);
+                if(p.test(aux.elem)){
+                    return new Yield<>((T) aux.elem, aux.state);
                 }
                 else{
-                    return new Skip<ArrayList>((ArrayList)((Yield)aux).state);
+                    return new Skip<>(aux.state);
                 }
             }
 
@@ -94,10 +94,10 @@ public class FStream<T>{
                   return new Skip<Either>(new Right(streamB.state));
               }
               else if(aux instanceof Skip){
-                  return new Skip<Either>(new Left(((Skip) aux).state));
+                  return new Skip<Either>(new Left(aux.state));
               }
               else if(aux instanceof Yield){
-                  return new Yield<T, Either>((T)((Yield) aux).elem, new Left(((Yield) aux).state));
+                  return new Yield<T, Either>((T) aux.elem, new Left(aux.state));
               }
           }
           else if(x instanceof Right){
@@ -108,10 +108,10 @@ public class FStream<T>{
                   return new Done();
               }
               else if(aux instanceof Skip){
-                  return new Skip<Either>(new Right(((Skip) aux).state));
+                  return new Skip<Either>(new Right(aux.state));
               }
               else if(aux instanceof Yield){
-                  return new Yield<T, Either>((T)((Yield) aux).elem, new Right(((Yield) aux).state));
+                  return new Yield<T, Either>((T) aux.elem, new Right(aux.state));
               }
           }
 
@@ -171,7 +171,8 @@ public class FStream<T>{
             lB.add(i);
         }
         FStream<Integer> fsOrigB = fstream(lB);
-        ArrayList<Integer> lAppended = fsOrig.appendfs(fsOrigB).unfstream();
+        Predicate<Integer> p2 = n -> n >= 4;
+        ArrayList<Integer> lAppended = fsOrig.appendfs(fsOrigB).mapfs(inc).filterfs(p2).unfstream();
         System.out.println(lAppended);
     }
 }
