@@ -10,6 +10,14 @@ public class FStream<T>{
         this.state = state;
     }
 
+    public Function<Object, Step> getStepper() {
+        return stepper;
+    }
+
+    public Object getState() {
+        return state;
+    }
+
     public static <T> FStream<T> fstream(ArrayList<T> l){
         Function<Object, Step> stepper = x -> {
             ArrayList aux = (ArrayList) x;
@@ -154,6 +162,57 @@ public class FStream<T>{
         return new FStream<>(stepper, new Triple<>(this.state, streamB.state, Optional.empty()));
     }
 
+    public <S> FStream<S> concatMap(Function<T, FStream<S>> f){
+        Function<Object, Step> stepper = x -> {
+            Optional opAux = (Optional) ((Pair) x).getY();
+
+            if(!(opAux.isPresent())){
+                Step aux = this.stepper.apply(((Pair) x).getX());
+
+                if(aux instanceof Done){
+                    return new Done();
+                }
+                else if(aux instanceof Skip){
+                    return new Skip(new Pair<>(aux.state, Optional.empty()));
+                }
+                else if(aux instanceof Yield){
+                    return new Skip(new Pair<>(aux.state, Optional.of(f.apply((T) aux.elem))));
+                }
+            }
+            else{
+                FStream fAux = (FStream) opAux.get();
+                Step aux = (Step) fAux.getStepper().apply(fAux.getState());
+
+                if(aux instanceof Done){
+                    return new Skip(new Pair(((Pair) x).getX(), Optional.empty()));
+                }
+                else if(aux instanceof Skip){
+                    return new Skip(new Pair(((Pair) x).getX(), Optional.of(new FStream<>(fAux.getStepper(), aux.state))));
+                }
+                else if(aux instanceof Yield){
+                    return new Yield(aux.elem, new Pair(((Pair) x).getX(), Optional.of(new FStream<>(fAux.getStepper(), aux.state))));
+                }
+            }
+
+            return null;
+        };
+
+        return new FStream<>(stepper, new Pair(this.state, Optional.empty()));
+    }
+
+    public static <S> FStream<S> until(int number){
+        Function<Object, Step> stepper =  x -> {
+            if((int) x > number){
+                return new Done();
+            }
+            else{
+                return new Yield("word"+x, ((int) x+1));
+            }
+        };
+
+        return new FStream<S>(stepper, 0);
+    }
+
     public static <T> ArrayList<T> map(Function f, ArrayList<T> l){
         return fstream(l).mapfs(f).unfstream();
     }
@@ -213,5 +272,10 @@ public class FStream<T>{
         FStream<String> fsString = fstream(lStrings);
         ArrayList<Pair<Integer,String>> lZipped = fsOrig.mapfs(inc).filterfs(p2).zipfs(fsString).unfstream();
         System.out.println(lZipped);
+
+        System.out.println("ConcatMapping...");
+        ArrayList<Integer> lInts = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3}));
+        FStream<Integer> fsInts = fstream(lInts);
+        System.out.println(fsInts.concatMap(FStream::until).unfstream());
     }
 }
