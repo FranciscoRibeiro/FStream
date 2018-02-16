@@ -49,3 +49,4 @@ crashlytics-build.properties
 fabric.properties
 
 .attach_pid*
+log.txt

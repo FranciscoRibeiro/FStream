@@ -1,3 +1,7 @@
+package memtests;
+
+import datatypes.FStream;
+
 import java.util.ArrayList;
 import java.util.function.Function;
 

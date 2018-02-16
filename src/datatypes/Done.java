@@ -1,7 +1,7 @@
-import java.util.*;
+package datatypes;
 
 public class Done extends Step{
 	public String toString(){
-		return "I'm a Done\n";
+		return "I'm a datatypes.Done\n";
 	}
 }

@@ -1,3 +1,5 @@
+package util;
+
 public class Left<T> extends Either{
 
   public Left(T e){

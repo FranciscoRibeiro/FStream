@@ -1,8 +1,12 @@
+package datatypes;
+
+import util.*;
+
 import java.util.*;
 import java.util.function.*;
 
 public class FStream<T>{
-    private Function<Object, Step> stepper; // the stepper function: (s -> Step a s)
+    private Function<Object, Step> stepper; // the stepper function: (s -> datatypes.Step a s)
     private Object state; // the stream's state
 
     public FStream(Function<Object, Step> stepper, Object state){

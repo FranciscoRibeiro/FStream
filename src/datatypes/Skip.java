@@ -1,4 +1,4 @@
-import java.util.*;
+package datatypes;
 
 public class Skip<S> extends Step{
 
