@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.function.*;
 
 public class FStream<T>{
-    private Function<Object, Step> stepper; // the stepper function: (s -> datatypes.Step a s)
+    private Function<Object, Step> stepper; // the stepper function: (s -> Step a s)
     private Object state; // the stream's state
 
     public FStream(Function<Object, Step> stepper, Object state){
@@ -22,15 +22,18 @@ public class FStream<T>{
         return state;
     }
 
-    public static <T> FStream<T> fstream(ArrayList<T> l){
+    public static <T> FStream<T> fstream(List<T> l){
         Function<Object, Step> stepper = x -> {
-            ArrayList aux = (ArrayList) x;
+            List aux = (List) x;
 
             if(aux.isEmpty()){
                 return new Done();
             }
             else{
-                return new Yield<T, ArrayList<T>>((T) aux.get(0), new ArrayList<T>(aux.subList(1, aux.size())));
+                int auxSize = aux.size();
+                //ArrayList<T> sub = new ArrayList<T>(aux.subList(1, auxSize));
+                List<T> sub = aux.subList(1, auxSize);
+                return new Yield<T, List<T>>((T) aux.get(0), sub);
             }
         };
 
