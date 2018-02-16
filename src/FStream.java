@@ -213,6 +213,47 @@ public class FStream<T>{
         return new FStream<S>(stepper, 0);
     }
 
+    public <S> S foldr(BiFunction<T,S,S> f, S value){
+        return goFoldr(f, value, this.stepper, this.state);
+    }
+
+    public static <S,R> S goFoldr(BiFunction<R,S,S> f, S value, Function<Object, Step> stepper, Object state){
+        Step step = stepper.apply(state);
+
+        if(step instanceof Done){
+            return value;
+        }
+        else if(step instanceof Skip){
+            return goFoldr(f, value, stepper, step.state);
+        }
+        else if(step instanceof Yield){
+            return f.apply((R) step.elem, goFoldr(f, value, stepper, step.state));
+        }
+
+        return null;
+    }
+
+    public <S> S foldl(BiFunction<S,T,S> f, S value){
+        return goFoldl(f, value, this.stepper, this.state);
+    }
+
+    public static <S,R> S goFoldl(BiFunction<S, R, S> f, S value, Function<Object, Step> stepper, Object state) {
+        Step step = stepper.apply(state);
+
+        if(step instanceof Done){
+            return value;
+        }
+        else if(step instanceof Skip){
+            return goFoldl(f, value, stepper, step.state);
+        }
+        else if(step instanceof Yield){
+            return goFoldl(f, f.apply(value, (R) step.elem), stepper, step.state);
+        }
+
+        return null;
+    }
+
+
     public static <T> ArrayList<T> map(Function f, ArrayList<T> l){
         return fstream(l).mapfs(f).unfstream();
     }
@@ -277,5 +318,8 @@ public class FStream<T>{
         ArrayList<Integer> lInts = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3}));
         FStream<Integer> fsInts = fstream(lInts);
         System.out.println(fsInts.concatMap(FStream::until).unfstream());
+
+        System.out.println(fsInts.filterfs(x -> (int) x >= 2).foldr(((x,y) -> x-y), 0));
+        System.out.println(fsInts.filterfs(x -> (int) x >= 2).foldl(((x,y) -> x-y), 0));
     }
 }
