@@ -10,7 +10,7 @@ public class MemTests4 {
     public static void main(String[] args) {
         //build list
         long start = System.currentTimeMillis();
-        final int SIZE = 9000000;
+        final int SIZE = 20000000;
         ArrayList<Integer> li = new ArrayList<>();
         for (int i = 0; i < SIZE; i++) {
             li.add(i);

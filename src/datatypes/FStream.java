@@ -30,10 +30,9 @@ public class FStream<T>{
                 return new Done();
             }
             else{
-                int auxSize = aux.size();
-                //ArrayList<T> sub = new ArrayList<T>(aux.subList(1, auxSize));
-                List<T> sub = aux.subList(1, auxSize);
-                return new Yield<T, List<T>>((T) aux.get(0), sub);
+                List<T> sub = aux.subList(1, aux.size());
+                Yield y = new Yield<T, List<T>>((T) aux.get(0), sub);
+                return y;
             }
         };
 
@@ -58,17 +57,26 @@ public class FStream<T>{
         Function<Object, Step> stepper = x -> {
             Step aux = this.stepper.apply(x);
 
-            if(aux instanceof Done){
-                return new Done();
+            if(aux instanceof Skip || aux instanceof Done){
+                return aux;
+            }
+            else{
+                return new Yield<>(funcTtoS.apply((T) aux.elem), aux.state);
+            }
+
+            /*if(aux instanceof Done){
+                //return new Done();
+                return aux;
             }
             else if(aux instanceof Skip){
-                return new Skip<>(aux.state); //Need to change this later
+                //return new Skip<>(aux.state); //Need to change this later
+                return aux;
             }
             else if(aux instanceof Yield){
                 return new Yield<>(funcTtoS.apply((T) aux.elem), aux.state);
             }
 
-            return null;
+            return null;*/
         };
 
         return new FStream<S>(stepper, this.state);
@@ -78,22 +86,37 @@ public class FStream<T>{
         Function<Object, Step> stepper = x -> {
             Step aux = this.stepper.apply(x);
 
-            if(aux instanceof Done){
-                return new Done();
+            if(aux instanceof Skip || aux instanceof Done){
+                return aux;
             }
-            else if(aux instanceof Skip){
-                return new Skip<>(aux.state); //Need to change this later
-            }
-            else if(aux instanceof Yield){
+            else{
                 if(p.test(aux.elem)){
-                    return new Yield<>((T) aux.elem, aux.state);
+                    return aux;
                 }
                 else{
                     return new Skip<>(aux.state);
                 }
             }
 
-            return null;
+            /*if(aux instanceof Done){
+                //return new Done();
+                return aux;
+            }
+            else if(aux instanceof Skip){
+                //return new Skip<>(aux.state); //Need to change this later
+                return aux;
+            }
+            else if(aux instanceof Yield){
+                if(p.test(aux.elem)){
+                    //return new Yield<>((T) aux.elem, aux.state);
+                    return aux;
+                }
+                else{
+                    return new Skip<>(aux.state);
+                }
+            }
+
+            return null;*/
         };
 
         return new FStream<T>(stepper, this.state);
