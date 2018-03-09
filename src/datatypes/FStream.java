@@ -39,8 +39,9 @@ public class FStream<T>{
         return new FStream<T>(stepper, l);
     }
 
-    public ArrayList<T> unfstream(){
+    public List<T> unfstream(){
         ArrayList<T> res = new ArrayList<>();
+        //Vector<T> res = new Vector<>();
         Step step = this.stepper.apply(this.state);
 
         while(!(step instanceof Done)){
@@ -284,14 +285,14 @@ public class FStream<T>{
     }
 
 
-    public static <T> ArrayList<T> map(Function f, ArrayList<T> l){
+    public static <T> List<T> map(Function f, ArrayList<T> l){
         return fstream(l).mapfs(f).unfstream();
     }
 
 
 
     public static void main(String[] args){
-        final int SIZE = 6;
+        /*final int SIZE = 6;
         ArrayList<Integer> l = new ArrayList<>();
         for(int i = 1; i < SIZE; i++){
             l.add(i);
@@ -300,32 +301,32 @@ public class FStream<T>{
 
         FStream<Integer> fsOrig = fstream(l);
         System.out.println(fsOrig.state);
-        ArrayList<Integer> lOrig = fsOrig.unfstream();
+        List<Integer> lOrig = fsOrig.unfstream();
         System.out.println(lOrig);
         System.out.println("Test for reference equality: " + (lOrig == l));
 
         System.out.println("Mapping...");
         Function<Integer, Integer> f = n -> n + 30;
         FStream<Integer> fsMap = fsOrig.mapfs(f);
-        ArrayList<Integer> lMapped = fsMap.unfstream();
+        List<Integer> lMapped = fsMap.unfstream();
         System.out.println("Mapped: " + lMapped);
         System.out.println("Original: " + lOrig);
 
         System.out.println("Filtering...");
         Predicate<Integer> p = n -> n < 3;
         FStream<Integer> fsFilter = fsOrig.filterfs(p);
-        ArrayList<Integer> lFiltered = fsFilter.unfstream();
+        List<Integer> lFiltered = fsFilter.unfstream();
         System.out.println("Filtered: " + lFiltered);
         System.out.println("Original: " + lOrig);
 
         Function<Integer,Integer> inc = x -> x + 1;
         System.out.println("Mapping chained...");
         FStream<Integer> fsInc = fsOrig.mapfs(inc).mapfs(inc);
-        ArrayList<Integer> lInc = fsInc.unfstream();
+        List<Integer> lInc = fsInc.unfstream();
         System.out.println(lInc);
         System.out.println("Mapping merged...");
         FStream<Integer> fsInc2 = fsOrig.mapfs(inc.andThen(inc));
-        ArrayList<Integer> lInc2 = fsInc2.unfstream();
+        List<Integer> lInc2 = fsInc2.unfstream();
         System.out.println(lInc2);
 
         System.out.println("Appending...");
@@ -335,13 +336,13 @@ public class FStream<T>{
         }
         FStream<Integer> fsOrigB = fstream(lB);
         Predicate<Integer> p2 = n -> n >= 4;
-        ArrayList<Integer> lAppended = fsOrig.appendfs(fsOrigB).appendfs(fsOrigB).mapfs(inc).filterfs(p2).unfstream();
+        List<Integer> lAppended = fsOrig.appendfs(fsOrigB).appendfs(fsOrigB).mapfs(inc).filterfs(p2).unfstream();
         System.out.println(lAppended);
 
         System.out.println("Zipping...");
         ArrayList<String> lStrings = new ArrayList<>(Arrays.asList(new String[]{"hello", "ola", "hola", "ciao", "hallo"}));
         FStream<String> fsString = fstream(lStrings);
-        ArrayList<Pair<Integer,String>> lZipped = fsOrig.mapfs(inc).filterfs(p2).zipfs(fsString).unfstream();
+        List<Pair<Integer,String>> lZipped = fsOrig.mapfs(inc).filterfs(p2).zipfs(fsString).unfstream();
         System.out.println(lZipped);
 
         System.out.println("ConcatMapping...");
@@ -350,6 +351,13 @@ public class FStream<T>{
         System.out.println(fsInts.concatMap(FStream::until).unfstream());
 
         System.out.println(fsInts.filterfs(x -> (int) x >= 2).foldr(((x,y) -> x-y), 0));
-        System.out.println(fsInts.filterfs(x -> (int) x >= 2).foldl(((x,y) -> x-y), 0));
+        System.out.println(fsInts.filterfs(x -> (int) x >= 2).foldl(((x,y) -> x-y), 0));*/
+
+        System.out.println("GHC Optimizations...");
+        ArrayList<Integer> xsList = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
+        ArrayList<Integer> ysList = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));
+        FStream<Integer> xsFs = fstream(xsList);
+        FStream<Integer> ysFs = fstream(ysList);
+        System.out.println(xsFs.appendfs(ysFs).foldl((x,y) -> x + y, 0));
     }
 }

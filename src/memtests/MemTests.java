@@ -3,6 +3,7 @@ package memtests;
 import datatypes.FStream;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 public class MemTests {
@@ -26,28 +27,28 @@ public class MemTests {
         FStream<Integer> fs_last = FStream.fstream(l_last);
         System.out.println("Mapping merged...");
         FStream<Double> fs2 = fs_last.mapfs(intToLong.andThen(longToDouble));
-        ArrayList<Double> l2 = fs2.unfstream();
+        List<Double> l2 = fs2.unfstream();
 
         System.out.println("Mapping chained...");
         FStream<Double> fs1 = fs_first.mapfs(intToLong)
                 .mapfs(longToDouble);
-        ArrayList<Double> l1 = fs1.unfstream();
+        List<Double> l1 = fs1.unfstream();
 
         System.out.println(l1);
         System.out.println(l2);
 
 
         System.out.println("Mapping chained...");
-        ArrayList<Double> l3 = fs1.unfstream();
+        List<Double> l3 = fs1.unfstream();
         System.gc();
         System.out.println("Mapping merged...");
-        ArrayList<Double> l5 = fs2.unfstream();
+        List<Double> l5 = fs2.unfstream();
         System.gc();
         System.out.println("Mapping chained...");
-        ArrayList<Double> l6 = fs1.unfstream();
+        List<Double> l6 = fs1.unfstream();
         System.gc();
         System.out.println("Mapping merged...");
-        ArrayList<Double> l4 = fs2.unfstream();
+        List<Double> l4 = fs2.unfstream();
         System.gc();
 
 
