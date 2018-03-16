@@ -6,8 +6,8 @@ import java.util.*;
 import java.util.function.*;
 
 public class FStream<T>{
-    private Function<Object, Step> stepper; // the stepper function: (s -> Step a s)
-    private Object state; // the stream's state
+    public Function<Object, Step> stepper; // the stepper function: (s -> Step a s)
+    public Object state; // the stream's state
 
     public FStream(Function<Object, Step> stepper, Object state){
         this.stepper = stepper;
@@ -41,14 +41,21 @@ public class FStream<T>{
 
     public List<T> unfstream(){
         ArrayList<T> res = new ArrayList<>();
-        //Vector<T> res = new Vector<>();
-        Step step = this.stepper.apply(this.state);
+        Object auxState = this.state;
 
-        while(!(step instanceof Done)){
-            if(step instanceof Yield){
+        while (true) {
+            Step step = this.stepper.apply(auxState);
+
+            if (step instanceof Done) {
+                break;
+            } else if (step instanceof Skip) {
+                auxState = step.state;
+                continue;
+            } else if (step instanceof Yield) {
                 res.add((T) step.elem);
+                auxState = step.state;
+                continue;
             }
-            step = this.stepper.apply(step.state);
         }
 
         return res;
@@ -58,26 +65,17 @@ public class FStream<T>{
         Function<Object, Step> stepper = x -> {
             Step aux = this.stepper.apply(x);
 
-            if(aux instanceof Skip || aux instanceof Done){
-                return aux;
-            }
-            else{
-                return new Yield<>(funcTtoS.apply((T) aux.elem), aux.state);
-            }
-
-            /*if(aux instanceof Done){
-                //return new Done();
-                return aux;
+            if(aux instanceof Done){
+                return new Done();
             }
             else if(aux instanceof Skip){
-                //return new Skip<>(aux.state); //Need to change this later
-                return aux;
+                return new Skip<>(aux.state); //Need to change this later
             }
             else if(aux instanceof Yield){
                 return new Yield<>(funcTtoS.apply((T) aux.elem), aux.state);
             }
 
-            return null;*/
+            return null;
         };
 
         return new FStream<S>(stepper, this.state);
@@ -87,37 +85,22 @@ public class FStream<T>{
         Function<Object, Step> stepper = x -> {
             Step aux = this.stepper.apply(x);
 
-            if(aux instanceof Skip || aux instanceof Done){
-                return aux;
-            }
-            else{
-                if(p.test(aux.elem)){
-                    return aux;
-                }
-                else{
-                    return new Skip<>(aux.state);
-                }
-            }
-
-            /*if(aux instanceof Done){
-                //return new Done();
-                return aux;
+            if(aux instanceof Done){
+                return new Done();
             }
             else if(aux instanceof Skip){
-                //return new Skip<>(aux.state); //Need to change this later
-                return aux;
+                return new Skip<>(aux.state); //Need to change this later
             }
             else if(aux instanceof Yield){
                 if(p.test(aux.elem)){
-                    //return new Yield<>((T) aux.elem, aux.state);
-                    return aux;
+                    return new Yield<>((T) aux.elem, aux.state);
                 }
                 else{
                     return new Skip<>(aux.state);
                 }
             }
 
-            return null;*/
+            return null;
         };
 
         return new FStream<T>(stepper, this.state);
@@ -248,42 +231,40 @@ public class FStream<T>{
         return goFoldr(f, value, this.stepper, this.state);
     }
 
-    public static <S,R> S goFoldr(BiFunction<R,S,S> f, S value, Function<Object, Step> stepper, Object state){
+
+    public static <S, R> S goFoldr(BiFunction<R, S, S> f, S value, Function<Object, Step> stepper, Object state) {
+
         Step step = stepper.apply(state);
 
-        if(step instanceof Done){
+        if (step instanceof Done) {
             return value;
-        }
-        else if(step instanceof Skip){
+        } else if (step instanceof Skip) {
             return goFoldr(f, value, stepper, step.state);
-        }
-        else if(step instanceof Yield){
+        } else if (step instanceof Yield) {
             return f.apply((R) step.elem, goFoldr(f, value, stepper, step.state));
         }
 
         return null;
     }
 
-    public <S> S foldl(BiFunction<S,T,S> f, S value){
-        return goFoldl(f, value, this.stepper, this.state);
+    public <S> S foldl(BiFunction<S,T,S> f, S value) {
+        Object auxState = this.state;
+
+        while (true) {
+            Step step = stepper.apply(auxState);
+
+            if (step instanceof Done) {
+                break;
+            } else if (step instanceof Skip) {
+                auxState = step.state;
+            } else if (step instanceof Yield) {
+                auxState = step.state;
+                value = f.apply(value, (T) step.elem);
+            }
+        }
+
+        return value;
     }
-
-    public static <S,R> S goFoldl(BiFunction<S, R, S> f, S value, Function<Object, Step> stepper, Object state) {
-        Step step = stepper.apply(state);
-
-        if(step instanceof Done){
-            return value;
-        }
-        else if(step instanceof Skip){
-            return goFoldl(f, value, stepper, step.state);
-        }
-        else if(step instanceof Yield){
-            return goFoldl(f, f.apply(value, (R) step.elem), stepper, step.state);
-        }
-
-        return null;
-    }
-
 
     public static <T> List<T> map(Function f, ArrayList<T> l){
         return fstream(l).mapfs(f).unfstream();
@@ -292,7 +273,7 @@ public class FStream<T>{
 
 
     public static void main(String[] args){
-        /*final int SIZE = 6;
+        final int SIZE = 6;
         ArrayList<Integer> l = new ArrayList<>();
         for(int i = 1; i < SIZE; i++){
             l.add(i);
@@ -350,8 +331,10 @@ public class FStream<T>{
         FStream<Integer> fsInts = fstream(lInts);
         System.out.println(fsInts.concatMap(FStream::until).unfstream());
 
+        System.out.println("Foldr...");
         System.out.println(fsInts.filterfs(x -> (int) x >= 2).foldr(((x,y) -> x-y), 0));
-        System.out.println(fsInts.filterfs(x -> (int) x >= 2).foldl(((x,y) -> x-y), 0));*/
+        System.out.println("Foldl...");
+        System.out.println(fsInts.filterfs(x -> (int) x >= 2).foldl(((x,y) -> x-y), 0));
 
         System.out.println("GHC Optimizations...");
         ArrayList<Integer> xsList = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
