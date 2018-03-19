@@ -50,3 +50,7 @@ fabric.properties
 
 .attach_pid*
 *.txt
+# Manually compiled files to run benchmarks
+manual_compilation/
+# Script compiling and executing benchmarks
+run.sh

@@ -3,23 +3,38 @@ package optimizations;
 /* Example being considered during manual optimizations:
 foldl (+) 0 (append (stream xs) (stream ys)) */
 
-import datatypes.*;
+import datatypes.Done;
+import datatypes.Skip;
+import datatypes.Step;
+import datatypes.Yield;
 import util.Either;
 import util.Left;
 import util.Right;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class FirstInline {
+public class FirstInline extends MasterBenchmark{
 
     public static void main(String[] args) {
-        System.out.println("GHC optimizations...");
-        ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
-        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));
+        System.out.println("FirstInline...");
+        /*ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
+        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));*/
+
+        FirstInline fi = new FirstInline();
+
+        fi.populate();
+
+        fi.warmUp();
+
+        fi.measure();
+
+        fi.end();
+    }
+
+    @Override
+    public void work() {
         BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
 
 

@@ -6,21 +6,32 @@ import datatypes.Step;
 import datatypes.Yield;
 import util.Either;
 import util.Left;
-import util.RecursiveLambda;
 import util.Right;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class TrivialRewriteInAppend {
+public class TrivialRewriteInAppend extends MasterBenchmark{
 
     public static void main(String[] args) {
-        System.out.println("GHC optimizations...");
-        ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
-        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));
+        System.out.println("TrivialRewriteInAppend...");
+        /*ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
+        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));*/
+
+        TrivialRewriteInAppend tra = new TrivialRewriteInAppend();
+
+        tra.populate();
+
+        tra.warmUp();
+
+        tra.measure();
+
+        tra.end();
+    }
+
+    @Override
+    public void work() {
         BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
 
 

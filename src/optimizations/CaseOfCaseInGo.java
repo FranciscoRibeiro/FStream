@@ -15,12 +15,26 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class CaseOfCaseInGo {
+public class CaseOfCaseInGo extends MasterBenchmark{
 
     public static void main(String[] args) {
-        System.out.println("GHC optimizations...");
-        ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
-        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));
+        System.out.println("CaseOfCaseInGo...");
+        /*ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
+        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));*/
+
+        CaseOfCaseInGo ccg = new CaseOfCaseInGo();
+
+        ccg.populate();
+
+        ccg.warmUp();
+
+        ccg.measure();
+
+        ccg.end();
+    }
+
+    @Override
+    public void work() {
         BiFunction<Integer, Integer, Integer> f = (a, b) -> a + b;
 
 

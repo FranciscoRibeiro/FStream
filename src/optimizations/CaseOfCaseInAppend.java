@@ -8,18 +8,30 @@ import util.Either;
 import util.Left;
 import util.Right;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class CaseOfCaseInAppend {
+public class CaseOfCaseInAppend extends MasterBenchmark{
 
     public static void main(String[] args) {
-        System.out.println("GHC optimizations...");
-        ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
-        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));
+        System.out.println("CaseOfCaseInAppend...");
+        /*ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
+        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));*/
+
+        CaseOfCaseInAppend cca = new CaseOfCaseInAppend();
+
+        cca.populate();
+
+        cca.warmUp();
+
+        cca.measure();
+
+        cca.end();
+    }
+
+    @Override
+    public void work() {
         BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
 
 
@@ -55,7 +67,7 @@ public class CaseOfCaseInAppend {
                         }
                     }
 
-                return null;
+                    return null;
                 }).apply(((Left) x).fromLeft());
 
                 return aux;

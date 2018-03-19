@@ -11,12 +11,26 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class ConstructorSpecialisation {
+public class ConstructorSpecialisation extends MasterBenchmark{
 
     public static void main(String[] args) {
-        System.out.println("GHC optimizations...");
-        ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
-        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));
+        System.out.println("ConstructorSpecialisation...");
+        /*ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
+        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));*/
+
+        ConstructorSpecialisation cs = new ConstructorSpecialisation();
+
+        cs.populate();
+
+        cs.warmUp();
+
+        cs.measure();
+
+        cs.end();
+    }
+
+    @Override
+    public void work() {
         BiFunction<Integer, Integer, Integer> f = (a, b) -> a + b;
 
 

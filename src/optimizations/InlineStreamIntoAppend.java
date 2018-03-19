@@ -14,14 +14,27 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class InlineStreamIntoAppend {
+public class InlineStreamIntoAppend extends MasterBenchmark{
 
     public static void main(String[] args) {
-        System.out.println("GHC optimizations...");
-        ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
-        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));
-        BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
+        System.out.println("InlineStreamIntoAppend...");
+        /*ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
+        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));*/
 
+        InlineStreamIntoAppend isa = new InlineStreamIntoAppend();
+
+        isa.populate();
+
+        isa.warmUp();
+
+        isa.measure();
+
+        isa.end();
+    }
+
+    @Override
+    public void work() {
+        BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
 
         Function<Object, Step> nextAppend = x -> {
             if(x instanceof Left){
