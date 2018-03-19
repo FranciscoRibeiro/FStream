@@ -23,7 +23,7 @@ public class FStream<T>{
     }
 
     public static <T> FStream<T> fstream(List<T> l){
-        Function<Object, Step> stepper = x -> {
+        Function<Object, Step> nextStream = x -> {
             List aux = (List) x;
 
             if(aux.isEmpty()){
@@ -31,12 +31,11 @@ public class FStream<T>{
             }
             else{
                 List<T> sub = aux.subList(1, aux.size());
-                Yield y = new Yield<T, List<T>>((T) aux.get(0), sub);
-                return y;
+                return new Yield<T, List<T>>((T) aux.get(0), sub);
             }
         };
 
-        return new FStream<T>(stepper, l);
+        return new FStream<T>(nextStream, l);
     }
 
     public List<T> unfstream(){
@@ -62,7 +61,7 @@ public class FStream<T>{
     }
 
     public <S> FStream<S> mapfs(Function<T,S> funcTtoS){
-        Function<Object, Step> stepper = x -> {
+        Function<Object, Step> nextMap = x -> {
             Step aux = this.stepper.apply(x);
 
             if(aux instanceof Done){
@@ -78,11 +77,11 @@ public class FStream<T>{
             return null;
         };
 
-        return new FStream<S>(stepper, this.state);
+        return new FStream<S>(nextMap, this.state);
     }
 
     public FStream<T> filterfs(Predicate p){
-        Function<Object, Step> stepper = x -> {
+        Function<Object, Step> nextFilter = x -> {
             Step aux = this.stepper.apply(x);
 
             if(aux instanceof Done){
@@ -103,11 +102,11 @@ public class FStream<T>{
             return null;
         };
 
-        return new FStream<T>(stepper, this.state);
+        return new FStream<T>(nextFilter, this.state);
     }
 
     public FStream<T> appendfs(FStream<T> streamB){
-      Function<Object, Step> stepper = x -> {
+      Function<Object, Step> nextAppend = x -> {
           if(x instanceof Left){
               Step aux = this.stepper.apply(((Left) x).fromLeft());
 
@@ -138,11 +137,11 @@ public class FStream<T>{
           return null;
       };
 
-      return new FStream<T>(stepper, new Left(this.state));
+      return new FStream<T>(nextAppend, new Left(this.state));
     }
 
     public <S> FStream<Pair<T,S>> zipfs(FStream<S> streamB){
-        Function<Object, Step> stepper = x -> {
+        Function<Object, Step> nextZip = x -> {
             if(!(((Triple) x).getElem()).isPresent()){
                 Step aux = this.stepper.apply(((Triple) x).getStateA());
 
@@ -173,11 +172,11 @@ public class FStream<T>{
             return null;
         };
 
-        return new FStream<>(stepper, new Triple<>(this.state, streamB.state, Optional.empty()));
+        return new FStream<>(nextZip, new Triple<>(this.state, streamB.state, Optional.empty()));
     }
 
     public <S> FStream<S> concatMap(Function<T, FStream<S>> f){
-        Function<Object, Step> stepper = x -> {
+        Function<Object, Step> nextConcatMap = x -> {
             Optional opAux = (Optional) ((Pair) x).getY();
 
             if(!(opAux.isPresent())){
@@ -211,11 +210,11 @@ public class FStream<T>{
             return null;
         };
 
-        return new FStream<>(stepper, new Pair(this.state, Optional.empty()));
+        return new FStream<>(nextConcatMap, new Pair(this.state, Optional.empty()));
     }
 
     public static <S> FStream<S> until(int number){
-        Function<Object, Step> stepper =  x -> {
+        Function<Object, Step> nextUntil =  x -> {
             if((int) x > number){
                 return new Done();
             }
@@ -224,7 +223,7 @@ public class FStream<T>{
             }
         };
 
-        return new FStream<S>(stepper, 0);
+        return new FStream<S>(nextUntil, 0);
     }
 
     public <S> S foldr(BiFunction<T,S,S> f, S value){
@@ -249,12 +248,13 @@ public class FStream<T>{
 
     public <S> S foldl(BiFunction<S,T,S> f, S value) {
         Object auxState = this.state;
+        boolean over = false;
 
-        while (true) {
+        while (!over) {
             Step step = stepper.apply(auxState);
 
             if (step instanceof Done) {
-                break;
+                over = true;
             } else if (step instanceof Skip) {
                 auxState = step.state;
             } else if (step instanceof Yield) {
