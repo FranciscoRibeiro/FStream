@@ -3,13 +3,9 @@ package optimizations;
 /* Example being considered during manual optimizations:
 foldl (+) 0 (append (stream xs) (stream ys)) */
 
-import datatypes.Done;
-import datatypes.Skip;
-import datatypes.Step;
-import datatypes.Yield;
+import datatypes.*;
 import util.Either;
 import util.Left;
-import util.RecursiveLambda;
 import util.Right;
 
 import java.util.ArrayList;
@@ -20,23 +16,40 @@ import java.util.function.Function;
 
 public class FirstInline {
 
-    private static <S,T> S foldlAppend(BiFunction<S,T,S> f, S value, List<T> xs, List<T> ys){
-        Function<Object, Step> stepperStream = x -> {
+    public static void main(String[] args) {
+        System.out.println("GHC optimizations...");
+        ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
+        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));
+        BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
+
+
+        Function<Object, Step> nextStream = x -> {
             List aux = (List) x;
 
             if(aux.isEmpty()){
                 return new Done();
             }
             else{
-                List<T> sub = aux.subList(1, aux.size());
-                Yield y = new Yield<T, List<T>>((T) aux.get(0), sub);
-                return y;
+                List<Integer> sub = aux.subList(1, aux.size());
+                return new Yield<Integer, List<Integer>>((Integer) aux.get(0), sub);
             }
         };
 
-        Function<Object, Step> stepperAppend = x -> {
+        Function<Object, Step> nextStream1 = x -> {
+            List aux = (List) x;
+
+            if(aux.isEmpty()){
+                return new Done();
+            }
+            else{
+                List<Integer> sub = aux.subList(1, aux.size());
+                return new Yield<Integer, List<Integer>>((Integer) aux.get(0), sub);
+            }
+        };
+
+        Function<Object, Step> nextAppend = x -> {
             if(x instanceof Left){
-                Step aux = stepperStream.apply(((Left) x).fromLeft());
+                Step aux = nextStream.apply(((Left) x).fromLeft());
 
                 if(aux instanceof Done){
                     return new Skip<Either>(new Right(ys));
@@ -45,11 +58,11 @@ public class FirstInline {
                     return new Skip<Either>(new Left(aux.state));
                 }
                 else if(aux instanceof Yield){
-                    return new Yield<T, Either>((T) aux.elem, new Left(aux.state));
+                    return new Yield<Integer, Either>((Integer) aux.elem, new Left(aux.state));
                 }
             }
             else if(x instanceof Right){
-                Step aux = stepperStream.apply(((Right) x).fromRight());
+                Step aux = nextStream1.apply(((Right) x).fromRight());
 
                 if(aux instanceof Done){
                     return new Done();
@@ -58,38 +71,32 @@ public class FirstInline {
                     return new Skip<Either>(new Right(aux.state));
                 }
                 else if(aux instanceof Yield){
-                    return new Yield<T, Either>((T) aux.elem, new Right(aux.state));
+                    return new Yield<Integer, Either>((Integer) aux.elem, new Right(aux.state));
                 }
             }
 
             return null;
         };
 
-        RecursiveLambda<BiFunction<S, Object, S>> go = new RecursiveLambda<>();
+        Integer value = 0;
+        Object auxState = new Left(xs);
+        boolean over = false;
 
-        go.function = (z, x) -> {
-            Step aux = stepperAppend.apply(x);
+        while (!over) {
+            Step step = nextAppend.apply(auxState);
 
-            if(aux instanceof Done){
-                return z;
+            if (step instanceof Done) {
+                over = true;
+            } else if (step instanceof Skip) {
+                auxState = step.state;
+            } else if (step instanceof Yield) {
+                auxState = step.state;
+                value = f.apply(value, (Integer) step.elem);
             }
-            else if(aux instanceof Skip){
-                return go.function.apply(z, aux.state);
-            }
-            else if(aux instanceof Yield){
-                return go.function.apply(f.apply(z, (T) aux.elem), aux.state);
-            }
+        }
 
-            return null;
-        };
+        Integer res = value;
 
-        return go.function.apply(value, new Left(xs));
-    }
-    public static void main(String[] args) {
-        System.out.println("GHC optimizations...");
-        ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
-        ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));
-        BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
-        System.out.println(foldlAppend(f, 0, xs, ys));
+        System.out.println(res);
     }
 }

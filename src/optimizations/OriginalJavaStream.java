@@ -2,8 +2,6 @@ package optimizations;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
 
 /*
@@ -20,6 +18,7 @@ public class OriginalJavaStream {
         Stream<Integer> xsS = xs.stream();
         Stream<Integer> ysS = ys.stream();
         Integer res = Stream.concat(xsS, ysS).reduce(0, (a, b) -> a+b);
+
         System.out.println(res);
 
     }

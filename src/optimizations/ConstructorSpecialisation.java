@@ -1,48 +1,65 @@
 package optimizations;
 
+import datatypes.Step;
+import util.Left;
 import util.RecursiveLambda;
+import util.Right;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class ConstructorSpecialisation {
-    private static <S,T> S foldlAppend(BiFunction<S,T,S> f, S value, List<T> xs, List<T> ys){
-        RecursiveLambda<BiFunction<S, Object, S>> go1 = new RecursiveLambda<>();
-        RecursiveLambda<BiFunction<S, Object, S>> go2 = new RecursiveLambda<>();
-
-        go1.function = (z, x) -> {
-            List lAux = (List) x;
-
-            if (lAux.isEmpty()) {
-                return go2.function.apply(z, ys);
-            } else {
-                List<T> sub = lAux.subList(1, lAux.size());
-                return go1.function.apply(f.apply(z, (T) lAux.get(0)), sub);
-            }
-        };
-
-        go2.function = (z, x) -> {
-            List lAux = (List) x;
-
-            if(lAux.isEmpty()){
-                return z;
-            }
-            else{
-                List<T> sub = lAux.subList(1, lAux.size());
-                return go2.function.apply(f.apply(z, (T) lAux.get(0)), sub);
-            }
-        };
-
-        return go1.function.apply(value, xs);
-    }
 
     public static void main(String[] args) {
         System.out.println("GHC optimizations...");
         ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
         ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));
-        BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
-        System.out.println(foldlAppend(f, 0, xs, ys));
+        BiFunction<Integer, Integer, Integer> f = (a, b) -> a + b;
+
+
+        final Integer[] value = {0};
+        final Object[] auxState = {xs};
+        final boolean[] over = {false};
+
+        while (!over[0]) {
+            Step aux = ((Function<Object, Step>) x1 -> {
+                List aux1 = (List) x1;
+
+                if (aux1.isEmpty()) {
+                    auxState[0] = ys;
+                    over[0] = true;
+                } else {
+                    List<Integer> sub = aux1.subList(1, aux1.size());
+                    auxState[0] = sub;
+                    value[0] = f.apply(value[0], (Integer) aux1.get(0));
+                }
+
+                return null;
+            }).apply(auxState[0]);
+        }
+
+        over[0] = false;
+        while (!over[0]){
+            Step aux = ((Function<Object, Step>) x1 -> {
+                List aux1 = (List) x1;
+
+                if (aux1.isEmpty()) {
+                    over[0] = true;
+                } else {
+                    List<Integer> sub = aux1.subList(1, aux1.size());
+                    auxState[0] = sub;
+                    value[0] = f.apply(value[0], (Integer) aux1.get(0));
+                }
+
+                return null;
+            }).apply(auxState[0]);
+        }
+
+        Integer res = value[0];
+
+        System.out.println(res);
     }
 }
