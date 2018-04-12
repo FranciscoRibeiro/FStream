@@ -41,19 +41,18 @@ public class FStream<T>{
     public List<T> unfstream(){
         ArrayList<T> res = new ArrayList<>();
         Object auxState = this.state;
+        boolean over = false;
 
-        while (true) {
+        while (!over) {
             Step step = this.stepper.apply(auxState);
 
             if (step instanceof Done) {
-                break;
+                over = true;
             } else if (step instanceof Skip) {
                 auxState = step.state;
-                continue;
             } else if (step instanceof Yield) {
                 res.add((T) step.elem);
                 auxState = step.state;
-                continue;
             }
         }
 
@@ -68,7 +67,7 @@ public class FStream<T>{
                 return new Done();
             }
             else if(aux instanceof Skip){
-                return new Skip<>(aux.state); //Need to change this later
+                return new Skip<>(aux.state);
             }
             else if(aux instanceof Yield){
                 return new Yield<>(funcTtoS.apply((T) aux.elem), aux.state);
@@ -88,7 +87,7 @@ public class FStream<T>{
                 return new Done();
             }
             else if(aux instanceof Skip){
-                return new Skip<>(aux.state); //Need to change this later
+                return new Skip<>(aux.state);
             }
             else if(aux instanceof Yield){
                 if(p.test(aux.elem)){

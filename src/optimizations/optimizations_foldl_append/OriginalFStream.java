@@ -1,10 +1,10 @@
-package optimizations;
+package optimizations.optimizations_foldl_append;
 
 import datatypes.FStream;
 
 import java.util.function.BiFunction;
 
-public class OriginalFStream extends MasterBenchmark{
+public class OriginalFStream extends MasterBenchmarkFoldlAppend {
     public static void main(String[] args) {
         System.out.println("OriginalFStream...");
         /*ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
@@ -23,11 +23,11 @@ public class OriginalFStream extends MasterBenchmark{
 
     @Override
     public void work() {
-        BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
+        BiFunction<Long, Integer, Long> f = (a, b) -> a+b;
 
         FStream<Integer> xsFs = FStream.fstream(xs);
         FStream<Integer> ysFs = FStream.fstream(ys);
-        Integer res = xsFs.appendfs(ysFs).foldl(f, 0);
+        Long res = xsFs.appendfs(ysFs).foldl(f, (long) 0);
 
 
         System.out.println(res);

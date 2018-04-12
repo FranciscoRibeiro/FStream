@@ -1,17 +1,12 @@
-package optimizations;
+package optimizations.optimizations_foldl_append;
 
 import datatypes.Step;
-import util.Left;
-import util.RecursiveLambda;
-import util.Right;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class ConstructorSpecialisation extends MasterBenchmark{
+public class ConstructorSpecialisation extends MasterBenchmarkFoldlAppend {
 
     public static void main(String[] args) {
         System.out.println("ConstructorSpecialisation...");
@@ -31,10 +26,10 @@ public class ConstructorSpecialisation extends MasterBenchmark{
 
     @Override
     public void work() {
-        BiFunction<Integer, Integer, Integer> f = (a, b) -> a + b;
+        BiFunction<Long, Integer, Long> f = (a, b) -> a + b;
 
 
-        final Integer[] value = {0};
+        final Long[] value = {(long) 0};
         final Object[] auxState = {xs};
         final boolean[] over = {false};
 
@@ -72,7 +67,7 @@ public class ConstructorSpecialisation extends MasterBenchmark{
             }).apply(auxState[0]);
         }
 
-        Integer res = value[0];
+        Long res = value[0];
 
         System.out.println(res);
     }

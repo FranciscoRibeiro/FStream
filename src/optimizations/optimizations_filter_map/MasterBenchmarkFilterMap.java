@@ -1,19 +1,22 @@
-package optimizations;
+package optimizations.optimizations_filter_map;
 
+import experimental.Student;
+
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
-public abstract class MasterBenchmark {
-    private final int POPSIZE = 10;
-    private final int MEASUREMENTS = 1;
+public abstract class MasterBenchmarkFilterMap {
+    private final int POPSIZE = 20000000;
+    private final int MEASUREMENTS = 10;
     private long[] times = new long[MEASUREMENTS];
 
-    public ArrayList<Integer> xs = new ArrayList<>();
-    public ArrayList<Integer> ys = new ArrayList<>();
+    public ArrayList<Student> l = new ArrayList<>();
 
     public void end(){
-        xs = ys = null;
+        l = null;
 
         try {
             System.gc();
@@ -38,10 +41,20 @@ public abstract class MasterBenchmark {
         for(int i = 0; i < MEASUREMENTS; i++){
             long start = System.currentTimeMillis();
 
-            this.work();
+            ArrayList<Student> res = this.work();
 
             times[i] = System.currentTimeMillis() - start;
             System.out.println("Iteration " + i + ": " + times[i]);
+
+            //Using result list for something
+            try {
+                FileWriter fw = new FileWriter("printList2.txt");
+                for(Student s: res){
+                    fw.write(s.toString());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             try {
                 System.gc();
@@ -61,43 +74,31 @@ public abstract class MasterBenchmark {
         System.out.println("Time to complete: " + (sumTimes/(float) times.length)/1000);
     }
 
-    public abstract void work();
+    public abstract ArrayList<Student> work();
 
     public void warmUp(){
-        System.out.println(xs.size()); //Print collection's size
-        System.out.println(ys.size()); //Print collection's size
+        System.out.println(l.size()); //Print collection's size
 
         Random r = new Random(5);
-        System.out.println(xs.get(r.nextInt(POPSIZE/2))); //Print random element
-        System.out.println(ys.get(r.nextInt(POPSIZE/2))); //Print random element
+        System.out.println(l.get(r.nextInt(POPSIZE))); //Print random element
 
-        //Calculate sum of even numbers through the use of an iterator for list xs
-        int totalSum = 0;
-        Iterator<Integer> it = xs.iterator();
+        //Calculate sum of student grades through the use of an iterator
+        long totalSum = 0;
+        Iterator<Student> it = l.iterator();
         while(it.hasNext()){
-            Integer i = it.next();
-            if(i % 2 == 0){
-                totalSum += i;
-            }
+            Student s = it.next();
+            totalSum += s.grade;
         }
-        System.out.println("Even number sum for xs: " + totalSum);
 
-        //Calculate sum of odd numbers through the use of an iterator for list ys
-        totalSum = 0;
-        it = ys.iterator();
-        while(it.hasNext()){
-            Integer i = it.next();
-            if(i % 2 != 0){
-                totalSum += i;
-            }
-        }
-        System.out.println("Odd number sum for ys: " + totalSum);
+        System.out.println("Total grade sum: " + totalSum);
     }
 
     public void populate(){
-        for(int n = 1; n <= POPSIZE/2; n++){
-            xs.add(n);
-            ys.add(n + POPSIZE/2);
+        Random r = new Random(3);
+
+        for(int n = 1; n <= POPSIZE; n++){
+            Student s = new Student("s_" + n, r.nextInt(201));
+            l.add(s);
         }
     }
 }

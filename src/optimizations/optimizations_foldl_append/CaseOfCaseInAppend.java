@@ -1,4 +1,4 @@
-package optimizations;
+package optimizations.optimizations_foldl_append;
 
 import datatypes.Done;
 import datatypes.Skip;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class CaseOfCaseInAppend extends MasterBenchmark{
+public class CaseOfCaseInAppend extends MasterBenchmarkFoldlAppend {
 
     public static void main(String[] args) {
         System.out.println("CaseOfCaseInAppend...");
@@ -32,7 +32,7 @@ public class CaseOfCaseInAppend extends MasterBenchmark{
 
     @Override
     public void work() {
-        BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
+        BiFunction<Long, Integer, Long> f = (a, b) -> a+b;
 
 
         Function<Object, Step> nextAppend = x -> {
@@ -112,7 +112,7 @@ public class CaseOfCaseInAppend extends MasterBenchmark{
             return null;
         };
 
-        Integer value = 0;
+        Long value = (long) 0;
         Object auxState = new Left(xs);
         boolean over = false;
 
@@ -129,7 +129,7 @@ public class CaseOfCaseInAppend extends MasterBenchmark{
             }
         }
 
-        Integer res = value;
+        Long res = value;
 
         System.out.println(res);
     }

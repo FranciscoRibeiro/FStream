@@ -1,4 +1,4 @@
-package optimizations;
+package optimizations.optimizations_foldl_append;
 
 import datatypes.Done;
 import datatypes.Skip;
@@ -8,33 +8,32 @@ import util.Either;
 import util.Left;
 import util.Right;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class InlineStreamIntoAppend extends MasterBenchmark{
+public class TrivialRewriteInAppend extends MasterBenchmarkFoldlAppend {
 
     public static void main(String[] args) {
-        System.out.println("InlineStreamIntoAppend...");
+        System.out.println("TrivialRewriteInAppend...");
         /*ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
         ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));*/
 
-        InlineStreamIntoAppend isa = new InlineStreamIntoAppend();
+        TrivialRewriteInAppend tra = new TrivialRewriteInAppend();
 
-        isa.populate();
+        tra.populate();
 
-        isa.warmUp();
+        tra.warmUp();
 
-        isa.measure();
+        tra.measure();
 
-        isa.end();
+        tra.end();
     }
 
     @Override
     public void work() {
-        BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
+        BiFunction<Long, Integer, Long> f = (a, b) -> a+b;
+
 
         Function<Object, Step> nextAppend = x -> {
             if(x instanceof Left){
@@ -42,22 +41,15 @@ public class InlineStreamIntoAppend extends MasterBenchmark{
                     List aux1 = (List) x1;
 
                     if (aux1.isEmpty()) {
-                        return new Done();
+                        return new Skip<Either>(new Right(ys));
+
                     } else {
                         List<Integer> sub = aux1.subList(1, aux1.size());
-                        return new Yield<Integer, List<Integer>>((Integer) aux1.get(0), sub);
+                        return new Yield<Integer, Either>((Integer) aux1.get(0), new Left(sub));
                     }
                 }).apply(((Left) x).fromLeft());
 
-                if(aux instanceof Done){
-                    return new Skip<Either>(new Right(ys));
-                }
-                else if(aux instanceof Skip){
-                    return new Skip<Either>(new Left(aux.state));
-                }
-                else if(aux instanceof Yield){
-                    return new Yield<Integer, Either>((Integer) aux.elem, new Left(aux.state));
-                }
+                return aux;
             }
             else if(x instanceof Right){
                 Step aux = ((Function<Object, Step>) x1 -> {
@@ -67,25 +59,17 @@ public class InlineStreamIntoAppend extends MasterBenchmark{
                         return new Done();
                     } else {
                         List<Integer> sub = aux1.subList(1, aux1.size());
-                        return new Yield<Integer, List<Integer>>((Integer) aux1.get(0), sub);
+                        return new Yield<Integer, Either>((Integer) aux1.get(0), new Right(sub));
                     }
                 }).apply(((Right) x).fromRight());
 
-                if(aux instanceof Done){
-                    return new Done();
-                }
-                else if(aux instanceof Skip){
-                    return new Skip<Either>(new Right(aux.state));
-                }
-                else if(aux instanceof Yield){
-                    return new Yield<Integer, Either>((Integer) aux.elem, new Right(aux.state));
-                }
+                return aux;
             }
 
             return null;
         };
 
-        Integer value = 0;
+        Long value = (long) 0;
         Object auxState = new Left(xs);
         boolean over = false;
 
@@ -102,7 +86,7 @@ public class InlineStreamIntoAppend extends MasterBenchmark{
             }
         }
 
-        Integer res = value;
+        Long res = value;
 
         System.out.println(res);
     }

@@ -1,7 +1,4 @@
-package optimizations;
-
-/* Example being considered during manual optimizations:
-foldl (+) 0 (append (stream xs) (stream ys)) */
+package optimizations.optimizations_foldl_append;
 
 import datatypes.Done;
 import datatypes.Skip;
@@ -15,56 +12,40 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class FirstInline extends MasterBenchmark{
+public class InlineStreamIntoAppend extends MasterBenchmarkFoldlAppend {
 
     public static void main(String[] args) {
-        System.out.println("FirstInline...");
+        System.out.println("InlineStreamIntoAppend...");
         /*ArrayList<Integer> xs = new ArrayList<>(Arrays.asList(new Integer[]{1, 2, 3, 4, 5}));
         ArrayList<Integer> ys = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));*/
 
-        FirstInline fi = new FirstInline();
+        InlineStreamIntoAppend isa = new InlineStreamIntoAppend();
 
-        fi.populate();
+        isa.populate();
 
-        fi.warmUp();
+        isa.warmUp();
 
-        fi.measure();
+        isa.measure();
 
-        fi.end();
+        isa.end();
     }
 
     @Override
     public void work() {
-        BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
-
-
-        Function<Object, Step> nextStream = x -> {
-            List aux = (List) x;
-
-            if(aux.isEmpty()){
-                return new Done();
-            }
-            else{
-                List<Integer> sub = aux.subList(1, aux.size());
-                return new Yield<Integer, List<Integer>>((Integer) aux.get(0), sub);
-            }
-        };
-
-        Function<Object, Step> nextStream1 = x -> {
-            List aux = (List) x;
-
-            if(aux.isEmpty()){
-                return new Done();
-            }
-            else{
-                List<Integer> sub = aux.subList(1, aux.size());
-                return new Yield<Integer, List<Integer>>((Integer) aux.get(0), sub);
-            }
-        };
+        BiFunction<Long, Integer, Long> f = (a, b) -> a+b;
 
         Function<Object, Step> nextAppend = x -> {
             if(x instanceof Left){
-                Step aux = nextStream.apply(((Left) x).fromLeft());
+                Step aux = ((Function<Object, Step>) x1 -> {
+                    List aux1 = (List) x1;
+
+                    if (aux1.isEmpty()) {
+                        return new Done();
+                    } else {
+                        List<Integer> sub = aux1.subList(1, aux1.size());
+                        return new Yield<Integer, List<Integer>>((Integer) aux1.get(0), sub);
+                    }
+                }).apply(((Left) x).fromLeft());
 
                 if(aux instanceof Done){
                     return new Skip<Either>(new Right(ys));
@@ -77,7 +58,16 @@ public class FirstInline extends MasterBenchmark{
                 }
             }
             else if(x instanceof Right){
-                Step aux = nextStream1.apply(((Right) x).fromRight());
+                Step aux = ((Function<Object, Step>) x1 -> {
+                    List aux1 = (List) x1;
+
+                    if (aux1.isEmpty()) {
+                        return new Done();
+                    } else {
+                        List<Integer> sub = aux1.subList(1, aux1.size());
+                        return new Yield<Integer, List<Integer>>((Integer) aux1.get(0), sub);
+                    }
+                }).apply(((Right) x).fromRight());
 
                 if(aux instanceof Done){
                     return new Done();
@@ -93,7 +83,7 @@ public class FirstInline extends MasterBenchmark{
             return null;
         };
 
-        Integer value = 0;
+        Long value = (long) 0;
         Object auxState = new Left(xs);
         boolean over = false;
 
@@ -110,7 +100,7 @@ public class FirstInline extends MasterBenchmark{
             }
         }
 
-        Integer res = value;
+        Long res = value;
 
         System.out.println(res);
     }

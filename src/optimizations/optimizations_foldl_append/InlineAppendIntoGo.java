@@ -1,4 +1,4 @@
-package optimizations;
+package optimizations.optimizations_foldl_append;
 
 import datatypes.Done;
 import datatypes.Skip;
@@ -6,16 +6,13 @@ import datatypes.Step;
 import datatypes.Yield;
 import util.Either;
 import util.Left;
-import util.RecursiveLambda;
 import util.Right;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class InlineAppendIntoGo extends MasterBenchmark{
+public class InlineAppendIntoGo extends MasterBenchmarkFoldlAppend {
 
     public static void main(String[] args) {
         System.out.println("InlineAppendIntoGo...");
@@ -35,10 +32,10 @@ public class InlineAppendIntoGo extends MasterBenchmark{
 
     @Override
     public void work() {
-        BiFunction<Integer, Integer, Integer> f = (a, b) -> a+b;
+        BiFunction<Long, Integer, Long> f = (a, b) -> a+b;
 
 
-        Integer value = 0;
+        Long value = (long) 0;
         Object auxState = new Left(xs);
         boolean over = false;
 
@@ -86,7 +83,7 @@ public class InlineAppendIntoGo extends MasterBenchmark{
             }
         }
 
-        Integer res = value;
+        Long res = value;
 
         System.out.println(res);
     }
