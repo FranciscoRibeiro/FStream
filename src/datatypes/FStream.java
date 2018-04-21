@@ -245,6 +245,17 @@ public class FStream<T>{
         return null;
     }
 
+    public <S> S foldrLoop(BiFunction<T,S,S> f, S value){
+        List<T> l = this.unfstream();
+
+        for(int i = l.size() - 1; i >= 0; i--){
+            T t = l.get(i);
+            value = f.apply(t, value);
+        }
+
+        return value;
+    }
+
     public <S> S foldl(BiFunction<S,T,S> f, S value) {
         Object auxState = this.state;
         boolean over = false;
@@ -332,6 +343,8 @@ public class FStream<T>{
 
         System.out.println("Foldr...");
         System.out.println(fsInts.filterfs(x -> (int) x >= 2).foldr(((x,y) -> x-y), 0));
+        System.out.println("FoldrLoop...");
+        System.out.println(fsInts.filterfs(x -> (int) x >= 2).foldrLoop(((x,y) -> x-y), 0));
         System.out.println("Foldl...");
         System.out.println(fsInts.filterfs(x -> (int) x >= 2).foldl(((x,y) -> x-y), 0));
 
