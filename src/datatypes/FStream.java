@@ -212,6 +212,46 @@ public class FStream<T>{
         return new FStream<>(nextConcatMap, new Pair(this.state, Optional.empty()));
     }
 
+    public FStream<T> intersect(FStream<?> streamB){
+        Function<Object, Step> nextIntersect = x -> {
+            if(!(((Triple) x).getElem()).isPresent()){
+                Step aux = this.stepper.apply(((Triple) x).getStateA());
+
+                if(aux instanceof Done){
+                    return new Done();
+                }
+                else if(aux instanceof Skip){
+                    return new Skip<>(new Triple<>(aux.state, ((Triple) x).getStateB(), Optional.empty()));
+                }
+                else if(aux instanceof Yield){
+                    return new Skip<>(new Triple<>(aux.state, streamB.state, Optional.of(aux.elem)));
+                }
+            }
+            else{
+                Step aux = streamB.stepper.apply(((Triple) x).getStateB());
+
+                if(aux instanceof Done){
+                    return new Skip<>(new Triple<>(((Triple) x).getStateA(), streamB.state, Optional.empty()));
+                }
+                else if(aux instanceof Skip){
+                    return new Skip<>(new Triple<>(((Triple) x).getStateA(), aux.state, ((Triple) x).getElem()));
+                }
+                else if(aux instanceof Yield){
+                    if(((Triple) x).getElem().get().equals(aux.elem)){
+                        return new Yield<>(((Triple) x).getElem().get(), new Triple<>(((Triple) x).getStateA(), streamB.state, Optional.empty()));
+                    }
+                    else{
+                        return new Skip<>(new Triple<>(((Triple) x).getStateA(), aux.state, ((Triple) x).getElem()));
+                    }
+                }
+            }
+
+            return null;
+        };
+
+        return new FStream<>(nextIntersect, new Triple<>(this.state, streamB.state, Optional.empty()));
+    }
+
     public static <S> FStream<S> until(int number){
         Function<Object, Step> nextUntil =  x -> {
             if((int) x > number){
