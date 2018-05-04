@@ -252,6 +252,64 @@ public class FStream<T>{
         return new FStream<>(nextIntersect, new Triple<>(this.state, streamB.state, Optional.empty()));
     }
 
+    public FStream<T> drop(int n){
+        Function<Object, Step> nextDrop = x -> {
+            Pair p = (Pair) x;
+            if((((Optional) p.getX()).isPresent())){
+                int number = (int) ((Optional) p.getX()).get();
+
+                if(number == 0){
+                    return new Skip<>(new Pair(Optional.empty(), p.getY()));
+                }
+                else{
+                    Step aux = this.stepper.apply(p.getY());
+
+                    if(aux instanceof Done){
+                        return new Done();
+                    }
+                    else if(aux instanceof Skip){
+                        return new Skip<>(new Pair<>(Optional.of(number), aux.state));
+                    }
+                    else if(aux instanceof Yield){
+                        return new Skip<>(new Pair<>(Optional.of(number - 1), aux.state));
+                    }
+                }
+            }
+            else{
+                Step aux = this.stepper.apply(p.getY());
+
+                if(aux instanceof Done){
+                    return new Done();
+                }
+                else if(aux instanceof Skip){
+                    return new Skip<>(new Pair<>(Optional.empty(), aux.state));
+                }
+                else if(aux instanceof Yield){
+                    return new Yield<>(aux.elem, new Pair<>(Optional.empty(), aux.state));
+                }
+            }
+
+            return null;
+        };
+
+        return new FStream<T>(nextDrop, new Pair<>(Optional.of(Math.max(0, n)), this.state));
+    }
+
+    public static <T,S> FStream<T> unfoldr(Function<S, Optional<Pair<T,S>>> builder, S seed){
+        Function<Object, Step> nextUnfoldr = x -> {
+            Optional<Pair<T, S>> aux = builder.apply((S) x);
+
+            if(!aux.isPresent()){
+                return new Done();
+            }
+            else{
+                return new Yield<>(aux.get().getX(), aux.get().getY());
+            }
+        };
+
+        return new FStream<T>(nextUnfoldr, seed);
+    }
+
     public static <S> FStream<S> until(int number){
         Function<Object, Step> nextUntil =  x -> {
             if((int) x > number){
@@ -266,23 +324,23 @@ public class FStream<T>{
     }
 
     public <S> S foldr(BiFunction<T,S,S> f, S value){
-        return goFoldr(f, value, this.stepper, this.state);
-    }
+        RecursiveLambda<Function<Object,S>> go = new RecursiveLambda<>();
+        go.function = x -> {
+            S res = null;
+            Step step = this.stepper.apply(x);
 
+            if (step instanceof Done) {
+                res = value;
+            } else if (step instanceof Skip) {
+                res = go.function.apply(step.state);
+            } else if (step instanceof Yield) {
+                res = f.apply((T) step.elem, go.function.apply(step.state));
+            }
 
-    public static <S, R> S goFoldr(BiFunction<R, S, S> f, S value, Function<Object, Step> stepper, Object state) {
+            return res;
+        };
 
-        Step step = stepper.apply(state);
-
-        if (step instanceof Done) {
-            return value;
-        } else if (step instanceof Skip) {
-            return goFoldr(f, value, stepper, step.state);
-        } else if (step instanceof Yield) {
-            return f.apply((R) step.elem, goFoldr(f, value, stepper, step.state));
-        }
-
-        return null;
+        return go.function.apply(this.state);
     }
 
     public <S> S foldrLoop(BiFunction<T,S,S> f, S value){
@@ -316,11 +374,50 @@ public class FStream<T>{
         return value;
     }
 
+    public T head(){
+        Object auxState = this.state;
+        boolean over = false;
+        T res = null;
+
+        while(!over){
+            Step step = stepper.apply(auxState);
+
+            if (step instanceof Done) {
+                over = true;
+            } else if (step instanceof Skip) {
+                auxState = step.state;
+            } else if (step instanceof Yield) {
+                res = (T) step.elem;
+                over = true;
+            }
+        }
+
+        return res;
+    }
+
+    public boolean isEmpty(){
+        Object auxState = this.state;
+        boolean empty = true, over = false;
+
+        while(!over){
+            Step step = stepper.apply(auxState);
+
+            if (step instanceof Done) {
+                over = true;
+            } else if (step instanceof Skip) {
+                auxState = step.state;
+            } else if (step instanceof Yield) {
+                empty = false;
+                over = true;
+            }
+        }
+
+        return empty;
+    }
+
     public static <T> List<T> map(Function f, ArrayList<T> l){
         return fstream(l).mapfs(f).unfstream();
     }
-
-
 
     public static void main(String[] args){
         final int SIZE = 6;
