@@ -4,11 +4,11 @@ import java.util.function.BiFunction;
 
 public class SimpleLoop {
     public static void main(String[] args) {
-        Integer v = 1;
+        Integer value = 1;
         for(Integer x = 5; x > 0; x = x-1){
-            v = ((BiFunction<Integer, Integer, Integer>) (a, b) -> a * b).apply(v, (Integer) x);
+            value = ((BiFunction<Integer, Integer, Integer>) (a, b) -> a * b).apply(value, x);
         }
-        Integer r = v;
+        Integer r = value;
         System.out.println(r);
     }
 }

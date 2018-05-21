@@ -310,6 +310,24 @@ public class FStream<T>{
         return new FStream<T>(nextUnfoldr, seed);
     }
 
+    public static <T,S> FStream<T> unfoldrBT(Function<S, Either<T, Pair<S,S>>> builder, S seed){
+        Function<Object, Step> nextUnfoldrBT = x -> {
+            Either<T, Pair<S,S>> aux = builder.apply((S) x);
+
+            if(aux instanceof Left){
+                return new LeafBT<>(((Left) aux).fromLeft());
+            }
+            else if(aux instanceof Right){
+                Pair p = (Pair) ((Right) aux).fromRight();
+                return new BranchBT(p.getX(), p.getY());
+            }
+
+            return null;
+        };
+
+        return new FStream<T>(nextUnfoldrBT, seed);
+    }
+
     public static <S> FStream<S> until(int number){
         Function<Object, Step> nextUntil =  x -> {
             if((int) x > number){
@@ -354,6 +372,14 @@ public class FStream<T>{
         return value;
     }
 
+    public <S> S foldrAsFoldl(BiFunction<T,S,S> f, S value){
+        BiFunction<Function<S,S>, T, Function<S,S>> reducer = (g, x) -> (a -> g.apply(f.apply(x,a)));
+        Function<S,S> finalAcc = this.foldl(reducer, Function.identity());
+        return finalAcc.apply(value);
+    }
+
+
+
     public <S> S foldl(BiFunction<S,T,S> f, S value) {
         Object auxState = this.state;
         boolean over = false;
@@ -366,13 +392,67 @@ public class FStream<T>{
             } else if (step instanceof Skip) {
                 auxState = step.state;
             } else if (step instanceof Yield) {
-                auxState = step.state;
                 value = f.apply(value, (T) step.elem);
+                auxState = step.state;
             }
         }
 
         return value;
     }
+
+    public <S> S foldBT(BiFunction<S,S,S> b, Function<T,S> l) {
+        RecursiveLambda<Function<Object,S>> go = new RecursiveLambda<>();
+        go.function = x -> {
+            S res = null;
+            Step step = this.stepper.apply(x);
+
+            if (step instanceof LeafBT) {
+                res = l.apply((T) step.elem);
+            } else if (step instanceof Skip) {
+                res = go.function.apply(step.state);
+            } else if (step instanceof BranchBT) {
+                res = b.apply(go.function.apply(((BranchBT) step).state1), go.function.apply(((BranchBT) step).state2));
+            }
+
+            return res;
+        };
+
+        return go.function.apply(this.state);
+    }
+
+    public <S> S foldlBT(BiFunction<S,S,S> b, Function<T,S> l) {
+        S res = null;
+        boolean over = false;
+        Stack<Step> tree = new Stack<>();
+        tree.push(this.stepper.apply(this.state));
+        Optional<S> opAux = Optional.empty();
+        Step poppedStep;
+
+        while(!over){
+            if(tree.empty()){
+                res = opAux.get();
+                over = true;
+            }
+            else if(tree.peek() instanceof LeafBT){
+                if(!opAux.isPresent()){
+                    poppedStep = tree.pop();
+                    opAux = Optional.of(l.apply((T) poppedStep.elem));
+                }
+                else{
+                    poppedStep = tree.pop();
+                    opAux = Optional.of(b.apply(opAux.get(), l.apply((T) poppedStep.elem)));
+                }
+            }
+            else if(tree.peek() instanceof BranchBT){
+                poppedStep = tree.pop();
+                tree.push(this.stepper.apply(((BranchBT) poppedStep).state2));
+                tree.push(this.stepper.apply(((BranchBT) poppedStep).state1));
+            }
+        }
+
+        return res;
+    }
+
 
     public T head(){
         Object auxState = this.state;

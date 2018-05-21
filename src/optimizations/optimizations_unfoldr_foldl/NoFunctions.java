@@ -27,7 +27,7 @@ public class NoFunctions {
                 over = true;
             } else {
                 auxState = aux.get().getY();
-                value = ((BiFunction<Integer, Integer, Integer>) (x, y) -> x * y).apply(value, (Integer) aux.get().getX());
+                value = ((BiFunction<Integer, Integer, Integer>) (x, y) -> x * y).apply(value, aux.get().getX());
             }
         }
 
