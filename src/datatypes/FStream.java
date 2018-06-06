@@ -1,5 +1,9 @@
 package datatypes;
 
+import experimental.Continuation;
+import experimental.ContinuationBranchOp;
+import experimental.ContinuationFold;
+import experimental.ContinuationId;
 import util.*;
 
 import java.util.*;
@@ -452,6 +456,69 @@ public class FStream<T>{
 
         return res;
     }
+
+    public <S> S foldlBTv2(BiFunction<S,S,S> b, Function<T,S> l) {
+        S res = null;
+        boolean over = false;
+        Stack<Object> states = new Stack<>();
+        states.push(this.state);
+        Optional<S> opAux = Optional.empty();
+
+        while(!over){
+            if(states.empty()){
+                res = opAux.get();
+                over = true;
+            }
+
+            else{
+                Step step = this.stepper.apply(states.pop());
+
+                if(step instanceof LeafBT){
+                    if(!opAux.isPresent()){
+                        opAux = Optional.of(l.apply((T) step.elem));
+                    }
+                    else{
+                        opAux = Optional.of(b.apply(opAux.get(), l.apply((T) step.elem)));
+                    }
+                }
+                else if(step instanceof BranchBT){
+                    states.push(((BranchBT) step).state2);
+                    states.push(((BranchBT) step).state1);
+                }
+            }
+        }
+
+        return res;
+    }
+
+    public <S> S foldBTTailRec(BiFunction<S,S,S> b, Function<T,S> l) {
+        Continuation.b = b;
+        Continuation cont = new ContinuationId();
+        boolean over = false;
+        Continuation.globalState = this.state;
+
+        while(!over){
+            Step step = this.stepper.apply(Continuation.globalState);
+
+            if(step instanceof LeafBT){
+                cont = cont.execute(l.apply((T) step.elem));
+
+                if(cont == null){
+                    over = true;
+                }
+            }
+            else if(step instanceof BranchBT){
+                Continuation.globalState = ((BranchBT) step).state1;
+
+                Continuation<S,ContinuationBranchOp<S>> nextCont = new ContinuationBranchOp<>(cont);
+                cont = new ContinuationFold(((BranchBT) step).state2, nextCont);
+            }
+        }
+
+        return (S) Continuation.res;
+    }
+
+
 
 
     public T head(){

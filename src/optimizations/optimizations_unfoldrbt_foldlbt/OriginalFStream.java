@@ -1,4 +1,4 @@
-package experimental;
+package optimizations.optimizations_unfoldrbt_foldlbt;
 
 import util.Either;
 import util.Left;
@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 import static datatypes.FStream.unfoldrBT;
 
-public class FibTest {
+public class OriginalFStream {
     public static void main(String[] args) {
         Function<Integer, Either<Integer, Pair<Integer,Integer>>> g = x -> {
             if (x == 0){
@@ -26,13 +26,7 @@ public class FibTest {
 
         BiFunction<Integer, Integer, Integer> sum = (x,y) -> x + y;
 
-        final int NUMBER = 45;
-
-        long start = System.currentTimeMillis();
-        //System.out.println(unfoldrBT(g, NUMBER).foldBTTailRec(sum, Function.identity()));
-        System.out.println(unfoldrBT(g, NUMBER).foldlBTv2(sum, Function.identity()));
-        //System.out.println(unfoldrBT(g, NUMBER).foldlBT(sum, Function.identity()));
-        //System.out.println(unfoldrBT(g, NUMBER).foldBT(sum, Function.identity()));
-        System.out.println(System.currentTimeMillis() - start);
+        Integer res = unfoldrBT(g, 15).foldlBT(sum, Function.identity());
+        System.out.println(res);
     }
 }
