@@ -63,6 +63,25 @@ public class FStream<T>{
         return res;
     }
 
+    public BTree<T> unfstreamBT(){
+        BTree<T> res = null;
+        //Object auxState = this.state;
+
+        Step step = this.stepper.apply(this.state);
+
+        if (step instanceof BranchBT) {
+            FStream<T> f1 = new FStream<>(this.stepper, ((BranchBT) step).state1);
+            FStream<T> f2 = new FStream<>(this.stepper, ((BranchBT) step).state2);
+            res = new Branch<>(f1.unfstreamBT(), f2.unfstreamBT());
+        } else if (step instanceof Skip) {
+            //auxState = step.state;
+        } else if (step instanceof LeafBT) {
+            res = new Leaf<>((T) step.elem);
+        }
+
+        return res;
+    }
+
     public <S> FStream<S> mapfs(Function<T,S> funcTtoS){
         Function<Object, Step> nextMap = x -> {
             Step aux = this.stepper.apply(x);
