@@ -3,6 +3,7 @@ package optimizations.optimizations_unfoldrbt_foldbttailrec;
 import datatypes.BranchBT;
 import datatypes.LeafBT;
 import datatypes.Step;
+import demos.fibonacci.MasterBenchmarkFibonacci;
 import experimental.Continuation;
 import experimental.ContinuationBranchOp;
 import experimental.ContinuationFold;
@@ -12,27 +13,44 @@ import util.Left;
 import util.Pair;
 import util.Right;
 
+import java.lang.invoke.MethodHandles;
+import java.math.BigInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class FirstInline {
+public class FirstInline extends MasterBenchmarkFibonacci {
     public static void main(String[] args) {
-        Function<Integer, Either<Integer, Pair<Integer,Integer>>> g = x -> {
+        System.out.println(MethodHandles.lookup().lookupClass().getSimpleName() + "...");
+
+        FirstInline fi = new FirstInline();
+
+        /*fi.populate();
+
+        fi.warmUp();*/
+
+        fi.measure();
+
+        fi.end();
+    }
+
+    @Override
+    public void work() {
+        Function<Integer, Either<BigInteger, Pair<Integer,Integer>>> g = x -> {
             if (x == 0){
-                return new Left<>(0);
+                return new Left<>(BigInteger.ZERO);
             }
             else if(x == 1){
-                return new Left<>(1);
+                return new Left<>(BigInteger.ONE);
             }
             else{
                 return new Right<>(new Pair<>(x-1, x-2));
             }
         };
 
-        BiFunction<Integer, Integer, Integer> sum = (x, y) -> x + y;
+        BiFunction<BigInteger, BigInteger, BigInteger> sum = (x, y) -> x.add(y);
 
         Function<Object, Step> nextUnfoldrBT = x -> {
-            Either<Integer, Pair<Integer,Integer>> aux = g.apply((Integer) x);
+            Either<BigInteger, Pair<Integer,Integer>> aux = g.apply((Integer) x);
 
             if(aux instanceof Left){
                 return new LeafBT<>(((Left) aux).fromLeft());
@@ -48,13 +66,13 @@ public class FirstInline {
         Continuation.b = sum;
         Continuation cont = new ContinuationId();
         boolean over = false;
-        Continuation.globalState = 23;
+        Continuation.globalState = 38;
 
         while(!over){
             Step step = nextUnfoldrBT.apply(Continuation.globalState);
 
             if(step instanceof LeafBT){
-                cont = cont.execute(Function.<Integer>identity().apply((Integer) step.elem));
+                cont = cont.execute(Function.<BigInteger>identity().apply((BigInteger) step.elem));
 
                 if(cont == null){
                     over = true;
@@ -68,7 +86,7 @@ public class FirstInline {
             }
         }
 
-        Integer res = (Integer) Continuation.res;
+        BigInteger res = (BigInteger) Continuation.res;
 
         System.out.println(res);
     }

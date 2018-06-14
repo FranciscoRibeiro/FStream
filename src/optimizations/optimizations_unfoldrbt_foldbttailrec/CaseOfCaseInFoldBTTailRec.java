@@ -3,6 +3,7 @@ package optimizations.optimizations_unfoldrbt_foldbttailrec;
 import datatypes.BranchBT;
 import datatypes.LeafBT;
 import datatypes.Step;
+import demos.fibonacci.MasterBenchmarkFibonacci;
 import experimental.Continuation;
 import experimental.ContinuationBranchOp;
 import experimental.ContinuationFold;
@@ -12,39 +13,56 @@ import util.Left;
 import util.Pair;
 import util.Right;
 
+import java.lang.invoke.MethodHandles;
+import java.math.BigInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class CaseOfCaseInFoldBTTailRec {
+public class CaseOfCaseInFoldBTTailRec extends MasterBenchmarkFibonacci {
     public static void main(String[] args) {
-        Function<Integer, Either<Integer, Pair<Integer,Integer>>> g = x -> {
+        System.out.println(MethodHandles.lookup().lookupClass().getSimpleName() + "...");
+
+        CaseOfCaseInFoldBTTailRec ccf = new CaseOfCaseInFoldBTTailRec();
+
+        /*ccf.populate();
+
+        ccf.warmUp();*/
+
+        ccf.measure();
+
+        ccf.end();
+    }
+
+    @Override
+    public void work() {
+        Function<Integer, Either<BigInteger, Pair<Integer,Integer>>> g = x -> {
             if (x == 0){
-                return new Left<>(0);
+                return new Left<>(BigInteger.ZERO);
             }
             else if(x == 1){
-                return new Left<>(1);
+                return new Left<>(BigInteger.ONE);
             }
             else{
                 return new Right<>(new Pair<>(x-1, x-2));
             }
         };
 
-        BiFunction<Integer, Integer, Integer> sum = (x, y) -> x + y;
+        BiFunction<BigInteger, BigInteger, BigInteger> sum = (x, y) -> x.add(y);
 
         Continuation.b = sum;
         final Continuation[] cont = {new ContinuationId()};
         final boolean[] over = {false};
-        Continuation.globalState = 23;
+        Continuation.globalState = 38;
 
         while(!over[0]){
             Step step = ((Function<Object, Step>) x -> {
-                Either<Integer, Pair<Integer, Integer>> aux = g.apply((Integer) x);
+                Either<BigInteger, Pair<Integer, Integer>> aux = g.apply((Integer) x);
 
                 if (aux instanceof Left) {
                     Step innerAux = new LeafBT<>(((Left) aux).fromLeft());
 
                     if(innerAux instanceof LeafBT){
-                        cont[0] = cont[0].execute(Function.<Integer>identity().apply((Integer) innerAux.elem));
+                        cont[0] = cont[0].execute(Function.<BigInteger>identity().apply((BigInteger) innerAux.elem));
 
                         if(cont[0] == null){
                             over[0] = true;
@@ -79,7 +97,7 @@ public class CaseOfCaseInFoldBTTailRec {
             }).apply(Continuation.globalState);
         }
 
-        Integer res = (Integer) Continuation.res;
+        BigInteger res = (BigInteger) Continuation.res;
 
         System.out.println(res);
     }

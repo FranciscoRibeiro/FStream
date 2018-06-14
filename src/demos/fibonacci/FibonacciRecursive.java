@@ -1,8 +1,9 @@
 package demos.fibonacci;
 
+import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 
-public class FibonacciRecursive {
+public class FibonacciRecursive extends MasterBenchmarkFibonacci{
     private static BigInteger fib(int n){
         if(n <= 1){
             return BigInteger.valueOf(n);
@@ -13,6 +14,22 @@ public class FibonacciRecursive {
     }
 
     public static void main(String[] args) {
-        System.out.println(fib(340));
+        System.out.println(MethodHandles.lookup().lookupClass().getSimpleName() + "...");
+
+        FibonacciRecursive fibR = new FibonacciRecursive();
+
+        /*fibR.populate();
+
+        fibR.warmUp();*/
+
+        fibR.measure();
+
+        fibR.end();
+    }
+
+    @Override
+    public void work() {
+        BigInteger fib = fib(45);
+        System.out.println(fib);
     }
 }

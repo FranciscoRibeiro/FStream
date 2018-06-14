@@ -1,8 +1,9 @@
 package demos.fibonacci;
 
+import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 
-public class FibonacciIterative {
+public class FibonacciIterative extends MasterBenchmarkFibonacci{
     private static BigInteger fib(int n){
         if(n <= 1){
             return BigInteger.valueOf(n);
@@ -20,8 +21,22 @@ public class FibonacciIterative {
     }
 
     public static void main(String[] args) {
-        long start = System.currentTimeMillis();
-        System.out.println(fib(100000));
-        System.out.println("Time taken: " + (System.currentTimeMillis() - start));
+        System.out.println(MethodHandles.lookup().lookupClass().getSimpleName() + "...");
+
+        FibonacciIterative fibI = new FibonacciIterative();
+
+        /*fibI.populate();
+
+        fibI.warmUp();*/
+
+        fibI.measure();
+
+        fibI.end();
+    }
+
+    @Override
+    public void work() {
+        BigInteger fib = fib(100000);
+        System.out.println(fib);
     }
 }
