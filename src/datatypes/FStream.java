@@ -42,6 +42,21 @@ public class FStream<T>{
         return new FStream<T>(nextStream, l);
     }
 
+    public static <T> FStream<T> fstreamBT(BTree<T> b){
+        Function<Object, Step> nextStream = x -> {
+            BTree aux = (BTree) x;
+
+            if(aux instanceof Leaf){
+                return new LeafBT(((Leaf) aux).value);
+            }
+            else{
+                return new BranchBT(((Branch) aux).left, ((Branch) aux).right);
+            }
+        };
+
+        return new FStream<T>(nextStream, b);
+    }
+
     public List<T> unfstream(){
         ArrayList<T> res = new ArrayList<>();
         Object auxState = this.state;

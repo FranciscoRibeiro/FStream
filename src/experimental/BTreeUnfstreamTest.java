@@ -1,13 +1,12 @@
 package experimental;
 
 import datatypes.FStream;
-import util.Either;
-import util.Left;
-import util.Pair;
-import util.Right;
+import util.*;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import static datatypes.FStream.fstreamBT;
 import static datatypes.FStream.unfoldrBT;
 
 public class BTreeUnfstreamTest {
@@ -24,6 +23,10 @@ public class BTreeUnfstreamTest {
             }
         };
 
-        System.out.println(unfoldrBT(g, 3).unfstreamBT());
+        BiFunction<Integer, Integer, Integer> sum = (x, y) -> x + y;
+
+        BTree<Integer> tree = unfoldrBT(g, 15).unfstreamBT();
+        System.out.println(fstreamBT(tree).foldBT(sum, Function.identity()));
+
     }
 }

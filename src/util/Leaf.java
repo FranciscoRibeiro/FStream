@@ -1,7 +1,7 @@
 package util;
 
 public class Leaf<T> extends BTree<T> {
-    private T value;
+    public T value;
 
     public Leaf(T value) {
         this.value = value;

@@ -1,8 +1,8 @@
 package util;
 
 public class Branch<T> extends BTree<T>{
-    private BTree<T> left;
-    private BTree<T> right;
+    public BTree<T> left;
+    public BTree<T> right;
 
     public Branch(BTree<T> left, BTree<T> right) {
         this.left = left;
