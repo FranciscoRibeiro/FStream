@@ -1,9 +1,6 @@
 package datatypes;
 
-import experimental.Continuation;
-import experimental.ContinuationBranchOp;
-import experimental.ContinuationFold;
-import experimental.ContinuationId;
+import experimental.*;
 import util.*;
 
 import java.util.*;
@@ -416,7 +413,36 @@ public class FStream<T>{
         return finalAcc.apply(value);
     }
 
+    public <S> S foldrTailRec(BiFunction<T,S,S> f, S value){
+        Continuation.b = f;
+        Continuation cont = new ContinuationId();
+        boolean over = false;
+        Continuation.globalState = this.state;
+        Continuation.res = value;
 
+        while(!over){
+            Step step = this.stepper.apply(Continuation.globalState);
+
+            if(step instanceof Done){
+                cont = cont.execute(Continuation.res);
+
+                if(cont == null){
+                    over = true;
+                }
+            }
+            else if(step instanceof Skip){
+                Continuation.globalState = step.state;
+            }
+            else if(step instanceof Yield){
+                Continuation.globalState = step.state;
+
+                Continuation<S, ContinuationListElem<T,S>> nextCont = new ContinuationListElem<T,S>((T) step.elem, cont);
+                cont = new ContinuationListFold(nextCont);
+            }
+        }
+
+        return (S) Continuation.res;
+    }
 
     public <S> S foldl(BiFunction<S,T,S> f, S value) {
         Object auxState = this.state;
