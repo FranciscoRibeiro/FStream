@@ -43,6 +43,6 @@ public class FibonacciRecursiveFold extends MasterBenchmarkFibonacci{
 
         BiFunction<BigInteger, BigInteger, BigInteger> sum = (x, y) -> x.add(y);
 
-        System.out.println(unfoldrBT(g, 45).foldBT(sum, Function.identity()));
+        System.out.println(unfoldrBT(g, 38).foldBT(sum, Function.identity()));
     }
 }

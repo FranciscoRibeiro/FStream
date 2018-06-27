@@ -40,7 +40,7 @@ public class FibonacciTuple extends MasterBenchmarkFibonacci{
 
     @Override
     public void work() {
-        BigInteger fib = fib(45);
+        BigInteger fib = fib(7000);
         System.out.println(fib);
     }
 }
