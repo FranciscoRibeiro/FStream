@@ -8,35 +8,32 @@ import util.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class TrivialRewriteInAppend {
-    public static void print(List<List<Integer>> l, String fileName) {
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter(fileName);
+public class TrivialRewriteInAppend extends MasterBenchmarkUnstreamIterate{
+    public static void main(String[] args) {
+        System.out.println(MethodHandles.lookup().lookupClass().getSimpleName() + "...");
 
-            for (List<Integer> li : l) {
-                for (Integer i : li) {
-                    fw.write(i + "| ");
-                }
-                fw.write("\n");
-            }
+        TrivialRewriteInAppend tra = new TrivialRewriteInAppend();
 
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        /*tra.populate();
+
+        tra.warmUp();*/
+
+        tra.measure();
+
+        tra.end();
     }
 
-    public static void main(String[] args) {
-        List<Integer> l = Arrays.asList(1);
-
-        Function<List<Integer>, List<Integer>> f1 =
+    @Override
+    public void work() {
+        Function<List<BigInteger>, List<BigInteger>> f1 =
                 row -> {
 
                     Function<Object, Step> nextAppend = x -> {
@@ -47,8 +44,8 @@ public class TrivialRewriteInAppend {
                                 if (aux1.isEmpty()) {
                                     return new Skip<Either>(new Right(row));
                                 } else {
-                                    List<Integer> sub = aux1.subList(1, aux1.size());
-                                    return new Yield<Integer, Either>((Integer) aux1.get(0), new Left(sub));
+                                    List<BigInteger> sub = aux1.subList(1, aux1.size());
+                                    return new Yield<BigInteger, Either>((BigInteger) aux1.get(0), new Left(sub));
                                 }
                             }).apply(((Left) x).fromLeft());
 
@@ -60,8 +57,8 @@ public class TrivialRewriteInAppend {
                                 if (aux1.isEmpty()) {
                                     return new Done();
                                 } else {
-                                    List<Integer> sub = aux1.subList(1, aux1.size());
-                                    return new Yield<Integer, Either>((Integer) aux1.get(0), new Right(sub));
+                                    List<BigInteger> sub = aux1.subList(1, aux1.size());
+                                    return new Yield<BigInteger, Either>((BigInteger) aux1.get(0), new Right(sub));
                                 }
 
                             }).apply(((Right) x).fromRight());
@@ -78,10 +75,10 @@ public class TrivialRewriteInAppend {
                                 List aux1 = (List) x1;
 
                                 if (aux1.isEmpty()) {
-                                    return new Skip<Either>(new Right(Arrays.asList(0)));
+                                    return new Skip<Either>(new Right(Arrays.asList(BigInteger.ZERO)));
                                 } else {
-                                    List<Integer> sub = aux1.subList(1, aux1.size());
-                                    return new Yield<Integer, Either>((Integer) aux1.get(0), new Left(sub));
+                                    List<BigInteger> sub = aux1.subList(1, aux1.size());
+                                    return new Yield<BigInteger, Either>((BigInteger) aux1.get(0), new Left(sub));
                                 }
 
                             }).apply(((Left) x).fromLeft());
@@ -94,8 +91,8 @@ public class TrivialRewriteInAppend {
                                 if (aux1.isEmpty()) {
                                     return new Done();
                                 } else {
-                                    List<Integer> sub = aux1.subList(1, aux1.size());
-                                    return new Yield<Integer, Either>((Integer) aux1.get(0), new Right(sub));
+                                    List<BigInteger> sub = aux1.subList(1, aux1.size());
+                                    return new Yield<BigInteger, Either>((BigInteger) aux1.get(0), new Right(sub));
                                 }
 
                             }).apply(((Right) x).fromRight());
@@ -140,14 +137,14 @@ public class TrivialRewriteInAppend {
                         } else if (aux instanceof Skip) {
                             return new Skip<>(aux.state);
                         } else if (aux instanceof Yield) {
-                            return new Yield<>(((Function<Pair<Integer, Integer>, Integer>) p -> p.getX() + p.getY()).apply((Pair<Integer, Integer>) aux.elem), aux.state);
+                            return new Yield<>(((Function<Pair<BigInteger, BigInteger>, BigInteger>) p -> p.getX().add(p.getY())).apply((Pair<BigInteger, BigInteger>) aux.elem), aux.state);
                         }
 
                         return null;
                     };
 
-                    ArrayList<Integer> res = new ArrayList<>();
-                    Object auxState = new Triple<>(new Left(Arrays.asList(0)), new Left(row), Optional.empty());
+                    ArrayList<BigInteger> res = new ArrayList<>();
+                    Object auxState = new Triple<>(new Left(Arrays.asList(BigInteger.ZERO)), new Left(row), Optional.empty());
                     boolean over = false;
 
                     while (!over) {
@@ -158,7 +155,7 @@ public class TrivialRewriteInAppend {
                         } else if (step instanceof Skip) {
                             auxState = step.state;
                         } else if (step instanceof Yield) {
-                            res.add((Integer) step.elem);
+                            res.add((BigInteger) step.elem);
                             auxState = step.state;
                         }
                     }
@@ -166,10 +163,8 @@ public class TrivialRewriteInAppend {
                     return res;
                 };
 
-        long start = System.currentTimeMillis();
 
-
-        Function<Object, Step> nextIterate = x -> new Yield(x, f1.apply((List<Integer>) x));
+        Function<Object, Step> nextIterate = x -> new Yield(x, f1.apply((List<BigInteger>) x));
 
         Function<Object, Step> nextTake = x -> {
             Pair<Integer, Object> p = (Pair) x;
@@ -190,8 +185,8 @@ public class TrivialRewriteInAppend {
             return null;
         };
 
-        ArrayList<List<Integer>> res = new ArrayList<>();
-        Object auxState = new Pair<>(2000, l);
+        ArrayList<List<BigInteger>> res = new ArrayList<>();
+        Object auxState = new Pair<>(NLINES, l);
         boolean over = false;
 
         while (!over) {
@@ -202,16 +197,11 @@ public class TrivialRewriteInAppend {
             } else if (step instanceof Skip) {
                 auxState = step.state;
             } else if (step instanceof Yield) {
-                res.add((List<Integer>) step.elem);
+                res.add((List<BigInteger>) step.elem);
                 auxState = step.state;
             }
         }
 
-        List<List<Integer>> res1 = res;
-
-
-        System.out.println(System.currentTimeMillis() - start);
-
-        print(res1, "res1.txt");
+        res1 = res;
     }
 }

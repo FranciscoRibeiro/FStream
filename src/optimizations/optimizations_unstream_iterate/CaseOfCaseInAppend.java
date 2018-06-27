@@ -8,35 +8,32 @@ import util.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class CaseOfCaseInAppend {
-    public static void print(List<List<Integer>> l, String fileName){
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter(fileName);
+public class CaseOfCaseInAppend extends MasterBenchmarkUnstreamIterate{
+    public static void main(String[] args) {
+        System.out.println(MethodHandles.lookup().lookupClass().getSimpleName() + "...");
 
-            for(List<Integer> li: l){
-                for(Integer i: li){
-                    fw.write(i + "| ");
-                }
-                fw.write("\n");
-            }
+        CaseOfCaseInAppend cca = new CaseOfCaseInAppend();
 
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        /*cca.populate();
+
+        cca.warmUp();*/
+
+        cca.measure();
+
+        cca.end();
     }
 
-    public static void main(String[] args) {
-        List<Integer> l = Arrays.asList(1);
-
-        Function<List<Integer>,List<Integer>> f1 =
+    @Override
+    public void work() {
+        Function<List<BigInteger>,List<BigInteger>> f1 =
                 row -> {
 
                     Function<Object, Step> nextAppend = x -> {
@@ -54,11 +51,11 @@ public class CaseOfCaseInAppend {
                                         return new Skip<Either>(new Left(innerAux.state));
                                     }
                                     else if(innerAux instanceof Yield){
-                                        return new Yield<Integer, Either>((Integer) innerAux.elem, new Left(innerAux.state));
+                                        return new Yield<BigInteger, Either>((BigInteger) innerAux.elem, new Left(innerAux.state));
                                     }
                                 } else {
-                                    List<Integer> sub = aux1.subList(1, aux1.size());
-                                    Step innerAux = new Yield<Integer, List<Integer>>((Integer) aux1.get(0), sub);
+                                    List<BigInteger> sub = aux1.subList(1, aux1.size());
+                                    Step innerAux = new Yield<BigInteger, List<BigInteger>>((BigInteger) aux1.get(0), sub);
 
                                     if(innerAux instanceof Done){
                                         return new Skip<Either>(new Right(row));
@@ -67,7 +64,7 @@ public class CaseOfCaseInAppend {
                                         return new Skip<Either>(new Left(innerAux.state));
                                     }
                                     else if(innerAux instanceof Yield){
-                                        return new Yield<Integer, Either>((Integer) innerAux.elem, new Left(innerAux.state));
+                                        return new Yield<BigInteger, Either>((BigInteger) innerAux.elem, new Left(innerAux.state));
                                     }
                                 }
 
@@ -90,11 +87,11 @@ public class CaseOfCaseInAppend {
                                         return new Skip<Either>(new Right(innerAux.state));
                                     }
                                     else if(innerAux instanceof Yield){
-                                        return new Yield<Integer, Either>((Integer) innerAux.elem, new Right(innerAux.state));
+                                        return new Yield<BigInteger, Either>((BigInteger) innerAux.elem, new Right(innerAux.state));
                                     }
                                 } else {
-                                    List<Integer> sub = aux1.subList(1, aux1.size());
-                                    Step innerAux = new Yield<Integer, List<Integer>>((Integer) aux1.get(0), sub);
+                                    List<BigInteger> sub = aux1.subList(1, aux1.size());
+                                    Step innerAux = new Yield<BigInteger, List<BigInteger>>((BigInteger) aux1.get(0), sub);
 
                                     if(innerAux instanceof Done){
                                         return new Done();
@@ -103,7 +100,7 @@ public class CaseOfCaseInAppend {
                                         return new Skip<Either>(new Right(innerAux.state));
                                     }
                                     else if(innerAux instanceof Yield){
-                                        return new Yield<Integer, Either>((Integer) innerAux.elem, new Right(innerAux.state));
+                                        return new Yield<BigInteger, Either>((BigInteger) innerAux.elem, new Right(innerAux.state));
                                     }
                                 }
 
@@ -125,26 +122,26 @@ public class CaseOfCaseInAppend {
                                     Step innerAux = new Done();
 
                                     if(innerAux instanceof Done){
-                                        return new Skip<Either>(new Right(Arrays.asList(0)));
+                                        return new Skip<Either>(new Right(Arrays.asList(BigInteger.ZERO)));
                                     }
                                     else if(innerAux instanceof Skip){
                                         return new Skip<Either>(new Left(innerAux.state));
                                     }
                                     else if(innerAux instanceof Yield){
-                                        return new Yield<Integer, Either>((Integer) innerAux.elem, new Left(innerAux.state));
+                                        return new Yield<BigInteger, Either>((BigInteger) innerAux.elem, new Left(innerAux.state));
                                     }
                                 } else {
-                                    List<Integer> sub = aux1.subList(1, aux1.size());
-                                    Step innerAux = new Yield<Integer, List<Integer>>((Integer) aux1.get(0), sub);
+                                    List<BigInteger> sub = aux1.subList(1, aux1.size());
+                                    Step innerAux = new Yield<BigInteger, List<BigInteger>>((BigInteger) aux1.get(0), sub);
 
                                     if(innerAux instanceof Done){
-                                        return new Skip<Either>(new Right(Arrays.asList(0)));
+                                        return new Skip<Either>(new Right(Arrays.asList(BigInteger.ZERO)));
                                     }
                                     else if(innerAux instanceof Skip){
                                         return new Skip<Either>(new Left(innerAux.state));
                                     }
                                     else if(innerAux instanceof Yield){
-                                        return new Yield<Integer, Either>((Integer) innerAux.elem, new Left(innerAux.state));
+                                        return new Yield<BigInteger, Either>((BigInteger) innerAux.elem, new Left(innerAux.state));
                                     }
                                 }
 
@@ -167,11 +164,11 @@ public class CaseOfCaseInAppend {
                                         return new Skip<Either>(new Right(innerAux.state));
                                     }
                                     else if(innerAux instanceof Yield){
-                                        return new Yield<Integer, Either>((Integer) innerAux.elem, new Right(innerAux.state));
+                                        return new Yield<BigInteger, Either>((BigInteger) innerAux.elem, new Right(innerAux.state));
                                     }
                                 } else {
-                                    List<Integer> sub = aux1.subList(1, aux1.size());
-                                    Step innerAux = new Yield<Integer, List<Integer>>((Integer) aux1.get(0), sub);
+                                    List<BigInteger> sub = aux1.subList(1, aux1.size());
+                                    Step innerAux = new Yield<BigInteger, List<BigInteger>>((BigInteger) aux1.get(0), sub);
 
                                     if(innerAux instanceof Done){
                                         return new Done();
@@ -180,7 +177,7 @@ public class CaseOfCaseInAppend {
                                         return new Skip<Either>(new Right(innerAux.state));
                                     }
                                     else if(innerAux instanceof Yield){
-                                        return new Yield<Integer, Either>((Integer) innerAux.elem, new Right(innerAux.state));
+                                        return new Yield<BigInteger, Either>((BigInteger) innerAux.elem, new Right(innerAux.state));
                                     }
                                 }
 
@@ -234,14 +231,14 @@ public class CaseOfCaseInAppend {
                             return new Skip<>(aux.state);
                         }
                         else if(aux instanceof Yield){
-                            return new Yield<>(((Function<Pair<Integer, Integer>, Integer>) p -> p.getX() + p.getY()).apply((Pair<Integer, Integer>) aux.elem), aux.state);
+                            return new Yield<>(((Function<Pair<BigInteger, BigInteger>, BigInteger>) p -> p.getX().add(p.getY())).apply((Pair<BigInteger, BigInteger>) aux.elem), aux.state);
                         }
 
                         return null;
                     };
 
-                    ArrayList<Integer> res = new ArrayList<>();
-                    Object auxState = new Triple<>(new Left(Arrays.asList(0)), new Left(row), Optional.empty());
+                    ArrayList<BigInteger> res = new ArrayList<>();
+                    Object auxState = new Triple<>(new Left(Arrays.asList(BigInteger.ZERO)), new Left(row), Optional.empty());
                     boolean over = false;
 
                     while (!over) {
@@ -252,7 +249,7 @@ public class CaseOfCaseInAppend {
                         } else if (step instanceof Skip) {
                             auxState = step.state;
                         } else if (step instanceof Yield) {
-                            res.add((Integer) step.elem);
+                            res.add((BigInteger) step.elem);
                             auxState = step.state;
                         }
                     }
@@ -260,10 +257,8 @@ public class CaseOfCaseInAppend {
                     return res;
                 };
 
-        long start = System.currentTimeMillis();
 
-
-        Function<Object, Step> nextIterate = x -> new Yield(x, f1.apply((List<Integer>) x));
+        Function<Object, Step> nextIterate = x -> new Yield(x, f1.apply((List<BigInteger>) x));
 
         Function<Object, Step> nextTake = x -> {
             Pair<Integer,Object> p = (Pair) x;
@@ -287,8 +282,8 @@ public class CaseOfCaseInAppend {
             return null;
         };
 
-        ArrayList<List<Integer>> res = new ArrayList<>();
-        Object auxState = new Pair<>(2000, l);
+        ArrayList<List<BigInteger>> res = new ArrayList<>();
+        Object auxState = new Pair<>(NLINES, l);
         boolean over = false;
 
         while (!over) {
@@ -299,16 +294,11 @@ public class CaseOfCaseInAppend {
             } else if (step instanceof Skip) {
                 auxState = step.state;
             } else if (step instanceof Yield) {
-                res.add((List<Integer>) step.elem);
+                res.add((List<BigInteger>) step.elem);
                 auxState = step.state;
             }
         }
 
-        List<List<Integer>> res1 = res;
-
-
-        System.out.println(System.currentTimeMillis() - start);
-
-        print(res1, "res1.txt");
+        res1 = res;
     }
 }

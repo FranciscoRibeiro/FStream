@@ -11,6 +11,7 @@ import util.Triple;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,13 +19,13 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public class InlineIterateIntoTake {
-    public static void print(List<List<Integer>> l, String fileName) {
+    public static void print(List<List<BigInteger>> l, String fileName) {
         FileWriter fw = null;
         try {
             fw = new FileWriter(fileName);
 
-            for (List<Integer> li : l) {
-                for (Integer i : li) {
+            for (List<BigInteger> li : l) {
+                for (BigInteger i : li) {
                     fw.write(i + "| ");
                 }
                 fw.write("\n");
@@ -37,13 +38,13 @@ public class InlineIterateIntoTake {
     }
 
     public static void main(String[] args) {
-        List<Integer> l = Arrays.asList(1);
+        List<BigInteger> l = Arrays.asList(BigInteger.ONE);
 
-        Function<List<Integer>, List<Integer>> f1 =
+        Function<List<BigInteger>, List<BigInteger>> f1 =
                 row -> {
 
-                    ArrayList<Integer> res = new ArrayList<>();
-                    final Object[] auxState = {new Triple<>(new Left(Arrays.asList(0)), new Left(row), Optional.empty())};
+                    ArrayList<BigInteger> res = new ArrayList<>();
+                    final Object[] auxState = {new Triple<>(new Left(Arrays.asList(BigInteger.ZERO)), new Left(row), Optional.empty())};
                     final boolean[] over = {false};
 
                     while (!over[0]) {
@@ -58,8 +59,8 @@ public class InlineIterateIntoTake {
                                                 if (lAux.isEmpty()) {
                                                     auxState[0] = new Triple(new Right(row), ((Triple) x1).getStateB(), Optional.empty());
                                                 } else {
-                                                    List<Integer> sub = lAux.subList(1, lAux.size());
-                                                    auxState[0] = new Triple(new Left(sub), ((Triple) x1).getStateB(), Optional.of((Integer) lAux.get(0)));
+                                                    List<BigInteger> sub = lAux.subList(1, lAux.size());
+                                                    auxState[0] = new Triple(new Left(sub), ((Triple) x1).getStateB(), Optional.of((BigInteger) lAux.get(0)));
                                                 }
 
                                                 return null;
@@ -74,8 +75,8 @@ public class InlineIterateIntoTake {
                                                 if (lAux.isEmpty()) {
                                                     over[0] = true;
                                                 } else {
-                                                    List<Integer> sub = lAux.subList(1, lAux.size());
-                                                    auxState[0] = new Triple(new Right(sub), ((Triple) x1).getStateB(), Optional.of((Integer) lAux.get(0)));
+                                                    List<BigInteger> sub = lAux.subList(1, lAux.size());
+                                                    auxState[0] = new Triple(new Right(sub), ((Triple) x1).getStateB(), Optional.of((BigInteger) lAux.get(0)));
                                                 }
 
                                                 return null;
@@ -96,10 +97,10 @@ public class InlineIterateIntoTake {
                                                 List lAux = (List) x2;
 
                                                 if (lAux.isEmpty()) {
-                                                    auxState[0] = new Triple(((Triple) x1).getStateA(), new Right(Arrays.asList(0)), ((Triple) x1).getElem());
+                                                    auxState[0] = new Triple(((Triple) x1).getStateA(), new Right(Arrays.asList(BigInteger.ZERO)), ((Triple) x1).getElem());
                                                 } else {
-                                                    List<Integer> sub = lAux.subList(1, lAux.size());
-                                                    res.add((Integer) ((Function<Pair<Integer, Integer>, Integer>) p -> p.getX() + p.getY()).apply(new Pair<>((Integer) ((Triple) x1).getElem().get(), (Integer) lAux.get(0))));
+                                                    List<BigInteger> sub = lAux.subList(1, lAux.size());
+                                                    res.add((BigInteger) ((Function<Pair<BigInteger, BigInteger>, BigInteger>) p -> p.getX().add(p.getY())).apply(new Pair<>((BigInteger) ((Triple) x1).getElem().get(), (BigInteger) lAux.get(0))));
                                                     auxState[0] = new Triple(((Triple) x1).getStateA(), new Left(sub), Optional.empty());
                                                 }
 
@@ -115,8 +116,8 @@ public class InlineIterateIntoTake {
                                                 if (lAux.isEmpty()) {
                                                     over[0] = true;
                                                 } else {
-                                                    List<Integer> sub = lAux.subList(1, lAux.size());
-                                                    res.add((Integer) ((Function<Pair<Integer, Integer>, Integer>) p -> p.getX() + p.getY()).apply(new Pair<>((Integer) ((Triple) x1).getElem().get(), (Integer) lAux.get(0))));
+                                                    List<BigInteger> sub = lAux.subList(1, lAux.size());
+                                                    res.add((BigInteger) ((Function<Pair<BigInteger, BigInteger>, BigInteger>) p -> p.getX().add(p.getY())).apply(new Pair<>((BigInteger) ((Triple) x1).getElem().get(), (BigInteger) lAux.get(0))));
                                                     auxState[0] = new Triple(((Triple) x1).getStateA(), new Right(sub), Optional.empty());
                                                 }
 
@@ -149,7 +150,7 @@ public class InlineIterateIntoTake {
             if (p.getX() == 0) {
                 return new Done();
             } else {
-                Step aux = ((Function<Object, Step>) x1 -> new Yield(x1, f1.apply((List<Integer>) x1))).apply(p.getY());
+                Step aux = ((Function<Object, Step>) x1 -> new Yield(x1, f1.apply((List<BigInteger>) x1))).apply(p.getY());
 
                 if (aux instanceof Done) {
                     return new Done();
@@ -163,7 +164,7 @@ public class InlineIterateIntoTake {
             return null;
         };
 
-        ArrayList<List<Integer>> res = new ArrayList<>();
+        ArrayList<List<BigInteger>> res = new ArrayList<>();
         Object auxState = new Pair<>(2000, l);
         boolean over = false;
 
@@ -175,12 +176,12 @@ public class InlineIterateIntoTake {
             } else if (step instanceof Skip) {
                 auxState = step.state;
             } else if (step instanceof Yield) {
-                res.add((List<Integer>) step.elem);
+                res.add((List<BigInteger>) step.elem);
                 auxState = step.state;
             }
         }
 
-        List<List<Integer>> res1 = res;
+        List<List<BigInteger>> res1 = res;
 
 
         System.out.println(System.currentTimeMillis() - start);

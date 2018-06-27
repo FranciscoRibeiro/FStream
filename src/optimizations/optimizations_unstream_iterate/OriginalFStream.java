@@ -1,7 +1,7 @@
 package optimizations.optimizations_unstream_iterate;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -9,35 +9,26 @@ import java.util.function.Function;
 import static datatypes.FStream.fstream;
 import static datatypes.FStream.iterate;
 
-public class OriginalFStream {
-    public static void print(List<List<Integer>> l, String fileName){
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter(fileName);
+public class OriginalFStream extends MasterBenchmarkUnstreamIterate{
+    public static void main(String[] args) {
+        System.out.println(MethodHandles.lookup().lookupClass().getSimpleName() + "...");
 
-            for(List<Integer> li: l){
-                for(Integer i: li){
-                    fw.write(i + "| ");
-                }
-                fw.write("\n");
-            }
+        OriginalFStream ofs = new OriginalFStream();
 
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        /*ofs.populate();
+
+        ofs.warmUp();*/
+
+        ofs.measure();
+
+        ofs.end();
     }
 
-    public static void main(String[] args) {
-        List<Integer> l = Arrays.asList(1);
+    @Override
+    public void work() {
+        Function<List<BigInteger>,List<BigInteger>> f1 =
+                row -> fstream(Arrays.asList(BigInteger.ZERO)).appendfs(fstream(row)).zipfs(fstream(row).appendfs(fstream(Arrays.asList(BigInteger.ZERO)))).mapfs(p -> p.getX().add(p.getY())).unfstream();
 
-        Function<List<Integer>,List<Integer>> f1 =
-                row -> fstream(Arrays.asList(0)).appendfs(fstream(row)).zipfs(fstream(row).appendfs(fstream(Arrays.asList(0)))).mapfs(p -> p.getX() + p.getY()).unfstream();
-
-        long start = System.currentTimeMillis();
-        List<List<Integer>> res1 = iterate(f1, l).take(2000).unfstream();
-        System.out.println(System.currentTimeMillis() - start);
-
-        print(res1, "res1.txt");
+        res1 = iterate(f1, l).take(NLINES).unfstream();
     }
 }
