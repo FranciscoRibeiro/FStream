@@ -6,8 +6,7 @@ import datatypes.Step;
 import datatypes.Yield;
 import util.*;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,10 +14,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class CaseOfCaseInZip {
+public class CaseOfCaseInZip extends MasterBenchmarkUnstreamIterate{
     public static void main(String[] args) {
-        List<BigInteger> l = Arrays.asList(BigInteger.ONE);
+        System.out.println(MethodHandles.lookup().lookupClass().getSimpleName() + "...");
 
+        CaseOfCaseInZip ccz = new CaseOfCaseInZip();
+
+        /*ccz.populate();
+
+        ccz.warmUp();*/
+
+        ccz.measure();
+
+        ccz.end();
+    }
+
+    @Override
+    public void work() {
         Function<List<BigInteger>, List<BigInteger>> f1 =
                 row -> {
 
@@ -203,8 +215,6 @@ public class CaseOfCaseInZip {
                     return res;
                 };
 
-        long start = System.currentTimeMillis();
-
 
         Function<Object, Step> nextIterate = x -> new Yield(x, f1.apply((List<BigInteger>) x));
 
@@ -228,7 +238,7 @@ public class CaseOfCaseInZip {
         };
 
         ArrayList<List<BigInteger>> res = new ArrayList<>();
-        Object auxState = new Pair<>(2000, l);
+        Object auxState = new Pair<>(NLINES, l);
         boolean over = false;
 
         while (!over) {
@@ -244,11 +254,6 @@ public class CaseOfCaseInZip {
             }
         }
 
-        List<List<BigInteger>> res1 = res;
-
-
-        System.out.println(System.currentTimeMillis() - start);
-
-        print(res1, "res1.txt");
+        res1 = res;
     }
 }

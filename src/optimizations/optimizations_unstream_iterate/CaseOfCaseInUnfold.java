@@ -11,6 +11,7 @@ import util.Triple;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,28 +19,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class CaseOfCaseInUnfold {
-    public static void print(List<List<BigInteger>> l, String fileName) {
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter(fileName);
+public class CaseOfCaseInUnfold extends MasterBenchmarkUnstreamIterate{
+    public static void main(String[] args) {
+        System.out.println(MethodHandles.lookup().lookupClass().getSimpleName() + "...");
 
-            for (List<BigInteger> li : l) {
-                for (BigInteger i : li) {
-                    fw.write(i + "| ");
-                }
-                fw.write("\n");
-            }
+        CaseOfCaseInUnfold ccu = new CaseOfCaseInUnfold();
 
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        /*ccu.populate();
+
+        ccu.warmUp();*/
+
+        ccu.measure();
+
+        ccu.end();
     }
 
-    public static void main(String[] args) {
-        List<BigInteger> l = Arrays.asList(BigInteger.ONE);
-
+    @Override
+    public void work() {
         Function<List<BigInteger>, List<BigInteger>> f1 =
                 row -> {
 
@@ -142,11 +138,8 @@ public class CaseOfCaseInUnfold {
                     return res;
                 };
 
-        long start = System.currentTimeMillis();
-
-
         ArrayList<List<BigInteger>> res = new ArrayList<>();
-        final Object[] auxState = {new Pair<>(2000, l)};
+        final Object[] auxState = {new Pair<>(NLINES, l)};
         final boolean[] over = {false};
 
         while (!over[0]) {
@@ -181,11 +174,6 @@ public class CaseOfCaseInUnfold {
             }).apply(auxState[0]);
         }
 
-        List<List<BigInteger>> res1 = res;
-
-
-        System.out.println(System.currentTimeMillis() - start);
-
-        print(res1, "res1.txt");
+        res1 = res;
     }
 }

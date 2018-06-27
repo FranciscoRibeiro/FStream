@@ -68,11 +68,11 @@ public abstract class MasterBenchmarkUnstreamIterate {
             try {
                 System.gc();
                 Thread.sleep(1000);
-                System.runFinalization();
-                Thread.sleep(1000);
+                /*System.runFinalization();
+                Thread.sleep(1000);*/
                 System.gc();
-                Thread.sleep(1000);
-                System.runFinalization();
+                /*Thread.sleep(1000);
+                System.runFinalization();*/
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();

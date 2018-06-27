@@ -5,6 +5,7 @@ import util.Triple;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,28 +13,23 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class InvertLoops {
-    public static void print(List<List<BigInteger>> l, String fileName) {
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter(fileName);
+public class InvertLoops extends MasterBenchmarkUnstreamIterate{
+    public static void main(String[] args) {
+        System.out.println(MethodHandles.lookup().lookupClass().getSimpleName() + "...");
 
-            for (List<BigInteger> li : l) {
-                for (BigInteger i : li) {
-                    fw.write(i + "| ");
-                }
-                fw.write("\n");
-            }
+        InvertLoops il = new InvertLoops();
 
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        /*il.populate();
+
+        il.warmUp();*/
+
+        il.measure();
+
+        il.end();
     }
 
-    public static void main(String[] args) {
-        List<BigInteger> l = Arrays.asList(BigInteger.ONE);
-
+    @Override
+    public void work() {
         Function<List<BigInteger>, List<BigInteger>> f1 =
                 row -> {
                     ArrayList<BigInteger> res = new ArrayList<>();
@@ -93,11 +89,8 @@ public class InvertLoops {
                     return res;
                 };
 
-        long start = System.currentTimeMillis();
-
-
         ArrayList<List<BigInteger>> res = new ArrayList<>();
-        Pair auxState = new Pair<>(3000, l);
+        Pair auxState = new Pair<>(NLINES, l);
         boolean over = false;
 
         while (!over) {
@@ -110,11 +103,6 @@ public class InvertLoops {
             }
         }
 
-        List<List<BigInteger>> res1 = res;
-
-
-        System.out.println(System.currentTimeMillis() - start);
-
-        print(res1, "res1.txt");
+        res1 = res;
     }
 }
