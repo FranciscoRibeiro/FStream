@@ -330,6 +330,38 @@ public class FStream<T>{
         return new FStream<T>(nextDrop, new Pair<>(Optional.of(Math.max(0, n)), this.state));
     }
 
+    public FStream<T> take(int n){
+        Function<Object, Step> nextTake = x -> {
+            Pair<Integer,Object> p = (Pair) x;
+            if(p.getX() == 0){
+                return new Done();
+            }
+            else{
+                Step aux = this.stepper.apply(p.getY());
+
+                if(aux instanceof Done){
+                    return new Done();
+                }
+                else if(aux instanceof Skip){
+                    return new Skip<>(new Pair<>(p.getX(), aux.state));
+                }
+                else if(aux instanceof Yield){
+                    return new Yield<>(aux.elem, new Pair<>(p.getX()-1, aux.state));
+                }
+            }
+
+            return null;
+        };
+
+        return new FStream<>(nextTake, new Pair<>(n, this.state));
+    }
+
+    public static <T> FStream<T> iterate(Function<T,T> f, T t){
+        Function<Object, Step> nextIterate = x -> new Yield(x, f.apply((T) x));
+
+        return new FStream<>(nextIterate, t);
+    }
+
     public static <T,S> FStream<T> unfoldr(Function<S, Optional<Pair<T,S>>> builder, S seed){
         Function<Object, Step> nextUnfoldr = x -> {
             Optional<Pair<T, S>> aux = builder.apply((S) x);
