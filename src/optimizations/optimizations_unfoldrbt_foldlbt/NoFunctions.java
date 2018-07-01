@@ -1,8 +1,5 @@
-package optimizations.optimizations_unfoldrbt_foldlbt_v2;
+package optimizations.optimizations_unfoldrbt_foldlbt;
 
-import datatypes.BranchBT;
-import datatypes.LeafBT;
-import datatypes.Step;
 import util.Either;
 import util.Left;
 import util.Pair;
@@ -13,7 +10,7 @@ import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class InlineUnfoldrBTIntoFoldlBT {
+public class NoFunctions {
     public static void main(String[] args) {
         Function<Integer, Either<Integer, Pair<Integer,Integer>>> g = x -> {
             if (x == 0){
@@ -43,30 +40,20 @@ public class InlineUnfoldrBTIntoFoldlBT {
             }
 
             else{
-                Step step = ((Function<Object, Step>) x -> {
-                    Either<Integer, Pair<Integer, Integer>> aux = g.apply((Integer) x);
+                Either<Integer, Pair<Integer, Integer>> aux = g.apply((Integer) states.pop());
 
-                    if (aux instanceof Left) {
-                        return new LeafBT<>(((Left) aux).fromLeft());
-                    } else if (aux instanceof Right) {
-                        Pair p = (Pair) ((Right) aux).fromRight();
-                        return new BranchBT(p.getX(), p.getY());
-                    }
-
-                    return null;
-                }).apply(states.pop());
-
-                if(step instanceof LeafBT){
+                if (aux instanceof Left) {
                     if(!opAux.isPresent()){
-                        opAux = Optional.of(l.apply((Integer) step.elem));
+                        opAux = Optional.of(l.apply((Integer) ((Left) aux).fromLeft()));
                     }
                     else{
-                        opAux = Optional.of(sum.apply(opAux.get(), l.apply((Integer) step.elem)));
+                        opAux = Optional.of(sum.apply(opAux.get(), l.apply((Integer) ((Left) aux).fromLeft())));
                     }
-                }
-                else if(step instanceof BranchBT){
-                    states.push(((BranchBT) step).state2);
-                    states.push(((BranchBT) step).state1);
+                } else if (aux instanceof Right) {
+                    Pair p = (Pair) ((Right) aux).fromRight();
+
+                    states.push(p.getY());
+                    states.push(p.getX());
                 }
             }
         }

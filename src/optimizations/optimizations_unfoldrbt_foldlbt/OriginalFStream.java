@@ -24,9 +24,9 @@ public class OriginalFStream {
             }
         };
 
-        BiFunction<Integer, Integer, Integer> sum = (x,y) -> x + y;
+        BiFunction<Integer, Integer, Integer> sum = (x, y) -> x + y;
 
-        Integer res = unfoldrBT(g, 15).foldlBT(sum, Function.identity());
+        Integer res = unfoldrBT(g, 20).foldlBT(sum, Function.identity());
         System.out.println(res);
     }
 }

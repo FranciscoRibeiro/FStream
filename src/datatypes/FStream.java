@@ -516,40 +516,8 @@ public class FStream<T>{
         return go.function.apply(this.state);
     }
 
+
     public <S> S foldlBT(BiFunction<S,S,S> b, Function<T,S> l) {
-        S res = null;
-        boolean over = false;
-        Stack<Step> tree = new Stack<>();
-        tree.push(this.stepper.apply(this.state));
-        Optional<S> opAux = Optional.empty();
-        Step poppedStep;
-
-        while(!over){
-            if(tree.empty()){
-                res = opAux.get();
-                over = true;
-            }
-            else if(tree.peek() instanceof LeafBT){
-                if(!opAux.isPresent()){
-                    poppedStep = tree.pop();
-                    opAux = Optional.of(l.apply((T) poppedStep.elem));
-                }
-                else{
-                    poppedStep = tree.pop();
-                    opAux = Optional.of(b.apply(opAux.get(), l.apply((T) poppedStep.elem)));
-                }
-            }
-            else if(tree.peek() instanceof BranchBT){
-                poppedStep = tree.pop();
-                tree.push(this.stepper.apply(((BranchBT) poppedStep).state2));
-                tree.push(this.stepper.apply(((BranchBT) poppedStep).state1));
-            }
-        }
-
-        return res;
-    }
-
-    public <S> S foldlBTv2(BiFunction<S,S,S> b, Function<T,S> l) {
         S res = null;
         boolean over = false;
         Stack<Object> states = new Stack<>();

@@ -32,40 +32,18 @@ public class InlineUnfoldrBTIntoFoldlBT {
         Function<Integer, Integer> l = Function.identity();
         Integer res1 = null;
         boolean over = false;
-        Stack<Step> tree = new Stack<>();
-        tree.push(((Function<Object, Step>) x1 -> {
-            Either<Integer, Pair<Integer, Integer>> aux1 = g.apply((Integer) x1);
-
-            if (aux1 instanceof Left) {
-                return new LeafBT<>(((Left) aux1).fromLeft());
-            } else if (aux1 instanceof Right) {
-                Pair p1 = (Pair) ((Right) aux1).fromRight();
-                return new BranchBT(p1.getX(), p1.getY());
-            }
-
-            return null;
-        }).apply(15));
+        Stack<Object> states = new Stack<>();
+        states.push(20);
         Optional<Integer> opAux = Optional.empty();
-        Step poppedStep;
 
         while(!over){
-            if(tree.empty()){
+            if(states.empty()){
                 res1 = opAux.get();
                 over = true;
             }
-            else if(tree.peek() instanceof LeafBT){
-                if(!opAux.isPresent()){
-                    poppedStep = tree.pop();
-                    opAux = Optional.of(l.apply((Integer) poppedStep.elem));
-                }
-                else{
-                    poppedStep = tree.pop();
-                    opAux = Optional.of(sum.apply(opAux.get(), l.apply((Integer) poppedStep.elem)));
-                }
-            }
-            else if(tree.peek() instanceof BranchBT){
-                poppedStep = tree.pop();
-                tree.push(((Function<Object, Step>) x -> {
+
+            else{
+                Step step = ((Function<Object, Step>) x -> {
                     Either<Integer, Pair<Integer, Integer>> aux = g.apply((Integer) x);
 
                     if (aux instanceof Left) {
@@ -76,19 +54,20 @@ public class InlineUnfoldrBTIntoFoldlBT {
                     }
 
                     return null;
-                }).apply(((BranchBT) poppedStep).state2));
-                tree.push(((Function<Object, Step>) x1 -> {
-                    Either<Integer, Pair<Integer, Integer>> aux1 = g.apply((Integer) x1);
+                }).apply(states.pop());
 
-                    if (aux1 instanceof Left) {
-                        return new LeafBT<>(((Left) aux1).fromLeft());
-                    } else if (aux1 instanceof Right) {
-                        Pair p1 = (Pair) ((Right) aux1).fromRight();
-                        return new BranchBT(p1.getX(), p1.getY());
+                if(step instanceof LeafBT){
+                    if(!opAux.isPresent()){
+                        opAux = Optional.of(l.apply((Integer) step.elem));
                     }
-
-                    return null;
-                }).apply(((BranchBT) poppedStep).state1));
+                    else{
+                        opAux = Optional.of(sum.apply(opAux.get(), l.apply((Integer) step.elem)));
+                    }
+                }
+                else if(step instanceof BranchBT){
+                    states.push(((BranchBT) step).state2);
+                    states.push(((BranchBT) step).state1);
+                }
             }
         }
 

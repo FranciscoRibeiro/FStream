@@ -30,8 +30,7 @@ public class FibTest {
 
         long start = System.currentTimeMillis();
         //System.out.println(unfoldrBT(g, NUMBER).foldBTTailRec(sum, Function.identity()));
-        System.out.println(unfoldrBT(g, NUMBER).foldlBTv2(sum, Function.identity()));
-        //System.out.println(unfoldrBT(g, NUMBER).foldlBT(sum, Function.identity()));
+        System.out.println(unfoldrBT(g, NUMBER).foldlBT(sum, Function.identity()));
         //System.out.println(unfoldrBT(g, NUMBER).foldBT(sum, Function.identity()));
         System.out.println(System.currentTimeMillis() - start);
     }

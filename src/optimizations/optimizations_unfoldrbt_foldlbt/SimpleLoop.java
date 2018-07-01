@@ -1,4 +1,4 @@
-package optimizations.optimizations_unfoldrbt_foldlbt_v2;
+package optimizations.optimizations_unfoldrbt_foldlbt;
 
 import util.Either;
 import util.Left;

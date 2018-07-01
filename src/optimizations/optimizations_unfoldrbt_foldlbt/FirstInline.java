@@ -46,30 +46,31 @@ public class FirstInline {
         Function<Integer, Integer> l = Function.identity();
         Integer res1 = null;
         boolean over = false;
-        Stack<Step> tree = new Stack<>();
-        tree.push(nextUnfoldrBT.apply(15));
+        Stack<Object> states = new Stack<>();
+        states.push(20);
         Optional<Integer> opAux = Optional.empty();
-        Step poppedStep;
 
         while(!over){
-            if(tree.empty()){
+            if(states.empty()){
                 res1 = opAux.get();
                 over = true;
             }
-            else if(tree.peek() instanceof LeafBT){
-                if(!opAux.isPresent()){
-                    poppedStep = tree.pop();
-                    opAux = Optional.of(l.apply((Integer) poppedStep.elem));
+
+            else{
+                Step step = nextUnfoldrBT.apply(states.pop());
+
+                if(step instanceof LeafBT){
+                    if(!opAux.isPresent()){
+                        opAux = Optional.of(l.apply((Integer) step.elem));
+                    }
+                    else{
+                        opAux = Optional.of(sum.apply(opAux.get(), l.apply((Integer) step.elem)));
+                    }
                 }
-                else{
-                    poppedStep = tree.pop();
-                    opAux = Optional.of(sum.apply(opAux.get(), l.apply((Integer) poppedStep.elem)));
+                else if(step instanceof BranchBT){
+                    states.push(((BranchBT) step).state2);
+                    states.push(((BranchBT) step).state1);
                 }
-            }
-            else if(tree.peek() instanceof BranchBT){
-                poppedStep = tree.pop();
-                tree.push(nextUnfoldrBT.apply(((BranchBT) poppedStep).state2));
-                tree.push(nextUnfoldrBT.apply(((BranchBT) poppedStep).state1));
             }
         }
 
