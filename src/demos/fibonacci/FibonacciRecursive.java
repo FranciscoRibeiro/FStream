@@ -29,7 +29,7 @@ public class FibonacciRecursive extends MasterBenchmarkFibonacci{
 
     @Override
     public void work() {
-        BigInteger fib = fib(15000);
+        BigInteger fib = fib(38);
         System.out.println(fib);
     }
 }

@@ -36,7 +36,7 @@ public class FibonacciIterative extends MasterBenchmarkFibonacci{
 
     @Override
     public void work() {
-        BigInteger fib = fib(100000);
+        BigInteger fib = fib(700000);
         System.out.println(fib);
     }
 }

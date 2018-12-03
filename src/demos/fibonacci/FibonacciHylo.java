@@ -44,6 +44,6 @@ public class FibonacciHylo extends MasterBenchmarkFibonacci{
 
         BiFunction<BigInteger, BigInteger, BigInteger> sum = (x, y) -> x.add(y);
 
-        System.out.println(unfoldrBT(g, 900000).foldBTTailRec(sum, Function.identity()));
+        System.out.println(unfoldrBT(g, 38).foldBTTailRec(sum, Function.identity()));
     }
 }
