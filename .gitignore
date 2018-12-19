@@ -55,6 +55,7 @@ fabric.properties
 manual_compilation/
 # Script compiling and executing benchmarks
 run.sh
+name_checker.sh
 # Logs folder
 logs/
 # Spreadsheet containing some results and graphs

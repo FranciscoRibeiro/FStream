@@ -4,7 +4,9 @@ import experimental.*;
 import util.*;
 
 import java.util.*;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class FStream<T>{
     public Function<Object, Step> stepper; // the stepper function: (s -> Step a s)
@@ -496,6 +498,41 @@ public class FStream<T>{
         return value;
     }
 
+    public Optional<T> foldl1(BiFunction<T,T,T> f){
+        Object auxState = this.state;
+        boolean foundFirst = false, over = false;
+        T value = null;
+
+        while (!foundFirst) {
+            Step step = stepper.apply(auxState);
+
+            if (step instanceof Done) {
+                over = foundFirst = true;
+            } else if (step instanceof Skip) {
+                auxState = step.state;
+            } else if (step instanceof Yield) {
+                foundFirst = true;
+                value = (T) step.elem;
+                auxState = step.state;
+            }
+        }
+
+        while (!over) {
+            Step step = stepper.apply(auxState);
+
+            if (step instanceof Done) {
+                over = true;
+            } else if (step instanceof Skip) {
+                auxState = step.state;
+            } else if (step instanceof Yield) {
+                value = f.apply(value, (T) step.elem);
+                auxState = step.state;
+            }
+        }
+
+        return value == null ? Optional.empty() : Optional.of(value);
+    }
+
     public <S> S foldBT(BiFunction<S,S,S> b, Function<T,S> l) {
         RecursiveLambda<Function<Object,S>> go = new RecursiveLambda<>();
         go.function = x -> {
@@ -627,7 +664,7 @@ public class FStream<T>{
     }
 
     public static void main(String[] args){
-        final int SIZE = 6;
+        /*final int SIZE = 6;
         ArrayList<Integer> l = new ArrayList<>();
         for(int i = 1; i < SIZE; i++){
             l.add(i);
@@ -697,6 +734,11 @@ public class FStream<T>{
         ArrayList<Integer> ysList = new ArrayList<>(Arrays.asList(new Integer[]{6, 7, 8, 9, 10}));
         FStream<Integer> xsFs = fstream(xsList);
         FStream<Integer> ysFs = fstream(ysList);
-        System.out.println(xsFs.appendfs(ysFs).foldl((x,y) -> x + y, 0));
+        System.out.println(xsFs.appendfs(ysFs).foldl((x,y) -> x + y, 0));*/
+
+        System.out.println("Foldl1...");
+        ArrayList<Integer> foldl1List = new ArrayList<>(Arrays.asList(new Integer[]{}));
+        System.out.println(fstream(foldl1List).foldl((a,b) -> a+b, 0));
+        System.out.println(fstream(foldl1List).foldl1((a,b) -> a+b));
     }
 }
